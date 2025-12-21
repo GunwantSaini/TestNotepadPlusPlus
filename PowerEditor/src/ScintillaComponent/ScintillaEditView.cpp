@@ -2849,7 +2849,7 @@ void ScintillaEditView::getGenericText(char* dest, size_t destlen, size_t start,
 	::strncpy_s(dest, destlen, buffer.get(), _TRUNCATE);
 }
 
-void ScintillaEditView::getGenericText(wchar_t *dest, size_t destlen, size_t start, size_t end) const
+void ScintillaEditView::getGenericText(wchar_t* dest, size_t destlen, size_t start, size_t end) const
 {
 	WcharMbcsConvertor& wmc = WcharMbcsConvertor::getInstance();
 	char *destA = new char[end - start + 1];
@@ -3041,14 +3041,14 @@ void ScintillaEditView::addGenericText(const wchar_t * text2Append, intptr_t* ms
 	execute(SCI_ADDTEXT, strlen(text2AppendA), reinterpret_cast<LPARAM>(text2AppendA));
 }
 
-intptr_t ScintillaEditView::replaceTarget(const char* str2replace, intptr_t fromTargetPos, intptr_t toTargetPos) const
+intptr_t ScintillaEditView::replaceTarget(const std::string& str2replace, intptr_t fromTargetPos, intptr_t toTargetPos) const
 {
 	if (fromTargetPos != -1 || toTargetPos != -1)
 	{
 		execute(SCI_SETTARGETRANGE, fromTargetPos, toTargetPos);
 	}
 
-	return execute(SCI_REPLACETARGET, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(str2replace));
+	return execute(SCI_REPLACETARGET, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(str2replace.c_str()));
 }
 
 intptr_t ScintillaEditView::replaceTarget(const wchar_t * str2replace, intptr_t fromTargetPos, intptr_t toTargetPos) const
@@ -3075,32 +3075,15 @@ intptr_t ScintillaEditView::replaceTargetRegExMode(const wchar_t * re, intptr_t 
 	return execute(SCI_REPLACETARGETRE, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(reA));
 }
 
-void ScintillaEditView::showAutoCompletion(size_t lenEntered, const char* list) const
+void ScintillaEditView::showAutoCompletion(size_t lenEntered, const std::string& list) const
 {
-	execute(SCI_AUTOCSHOW, lenEntered, reinterpret_cast<LPARAM>(list));
+	execute(SCI_AUTOCSHOW, lenEntered, reinterpret_cast<LPARAM>(list.c_str()));
 	NppDarkMode::setDarkAutoCompletion();
 }
 
-void ScintillaEditView::showAutoCompletion(size_t lenEntered, const wchar_t* list) const
+void ScintillaEditView::showCallTip(size_t startPos, const std::string& def) const
 {
-	WcharMbcsConvertor& wmc = WcharMbcsConvertor::getInstance();
-	size_t cp = execute(SCI_GETCODEPAGE);
-	const char* listA = wmc.wchar2char(list, cp);
-	execute(SCI_AUTOCSHOW, lenEntered, reinterpret_cast<LPARAM>(listA));
-	NppDarkMode::setDarkAutoCompletion();
-}
-
-void ScintillaEditView::showCallTip(size_t startPos, const char* def) const
-{
-	execute(SCI_CALLTIPSHOW, startPos, reinterpret_cast<LPARAM>(def));
-}
-
-void ScintillaEditView::showCallTip(size_t startPos, const wchar_t* def) const
-{
-	WcharMbcsConvertor& wmc = WcharMbcsConvertor::getInstance();
-	size_t cp = execute(SCI_GETCODEPAGE);
-	const char* defA = wmc.wchar2char(def, cp);
-	execute(SCI_CALLTIPSHOW, startPos, reinterpret_cast<LPARAM>(defA));
+	execute(SCI_CALLTIPSHOW, startPos, reinterpret_cast<LPARAM>(def.c_str()));
 }
 
 wstring ScintillaEditView::getLine(size_t lineNumber) const

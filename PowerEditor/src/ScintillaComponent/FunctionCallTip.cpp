@@ -436,7 +436,7 @@ void FunctionCallTip::showCalltip()
 		_pEditView->execute(SCI_CALLTIPCANCEL);
 	else
 		_startPos = _curPos;
-	_pEditView->showCallTip(_startPos, callTipText.str().c_str());
+	_pEditView->showCallTip(_startPos, callTipText.str());
 
 	_selfActivated = true;
 	if (highlightstart != highlightend)

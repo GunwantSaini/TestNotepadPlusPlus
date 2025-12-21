@@ -350,9 +350,9 @@ bool AutoCompletion::showAutoComplete(AutocompleteType autocType, bool autoInser
 
 		if (autocType == autocWord || autocType == autocFuncAndWord)
 		{
-			char allChars[bufSize]{};
-			_pEditView->getGenericText(allChars, bufSize, startPos, endPos);
-			getWordArray(wordArray, beginChars, allChars);
+			char excludeChars[bufSize]{};
+			_pEditView->getGenericText(excludeChars, bufSize, startPos, endPos);
+			getWordArray(wordArray, beginChars, excludeChars);
 		}
 
 		// Add keywords to word array
@@ -393,8 +393,8 @@ bool AutoCompletion::showAutoComplete(AutocompleteType autocType, bool autoInser
 
 			intptr_t replacedLength = _pEditView->replaceTarget(
 				(typeSeparatorPos == std::string::npos) ?
-				wordArray[0].c_str() :
-				wordArray[0].substr(0, typeSeparatorPos).c_str(),
+				wordArray[0] :
+				wordArray[0].substr(0, typeSeparatorPos),
 				startPos, curPos
 			);
 
@@ -451,9 +451,9 @@ bool AutoCompletion::showAutoComplete(AutocompleteType autocType, bool autoInser
 	_pEditView->execute(SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, _ignoreCase);
 
 	if (autocType == autocFunc)
-		_pEditView->showAutoCompletion(curPos - startPos, _keyWords.c_str());
+		_pEditView->showAutoCompletion(curPos - startPos, _keyWords);
 	else
-		_pEditView->showAutoCompletion(curPos - startPos, words.c_str());
+		_pEditView->showAutoCompletion(curPos - startPos, words);
 
 	return true;
 }
@@ -614,11 +614,13 @@ void AutoCompletion::showPathCompletion()
 	std::wstring currentLine;
 	{
 		static constexpr intptr_t bufSize = MAX_PATH;
-		wchar_t buf[bufSize + 1] = { '\0' };
+		auto buf = std::string(bufSize + 1, '\0');
 		const intptr_t currentPos = _pEditView->execute(SCI_GETCURRENTPOS);
 		const auto startPos = std::max<intptr_t>(0, currentPos - bufSize);
-		_pEditView->getGenericText(buf, bufSize + 1, startPos, currentPos);
-		currentLine = buf;
+		_pEditView->getGenericText(buf.data(), bufSize + 1, startPos, currentPos);
+
+		const auto cp = static_cast<UINT>(_pEditView->execute(SCI_GETCODEPAGE));
+		currentLine = string2wstring(buf, cp);
 	}
 
 	/* Try to figure out which path the user wants us to complete.
@@ -670,10 +672,10 @@ void AutoCompletion::showPathCompletion()
 	}
 
 	// Show autocompletion box.
-	_pEditView->execute(SCI_AUTOCSETSEPARATOR, WPARAM('\n'));
+	_pEditView->execute(SCI_AUTOCSETSEPARATOR, static_cast<WPARAM>('\n'));
 	_pEditView->execute(SCI_AUTOCSETIGNORECASE, true);
 	_pEditView->execute(SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, true);
-	_pEditView->showAutoCompletion(rawPath.length(), autoCompleteEntries.c_str());
+	_pEditView->showAutoCompletion(rawPath.length(), wstring2string(autoCompleteEntries, CP_UTF8));
 	return;
 }
 

@@ -297,18 +297,16 @@ public:
 	std::wstring getSelectedTextToWChar(bool expand = true, Sci_Position* selCharNumber = nullptr);
     char * getWordOnCaretPos(char * txt, size_t size);
 
-	intptr_t searchInTarget(const std::string_view& Text2Find, size_t fromPos, size_t toPos) const;
+	intptr_t searchInTarget(const std::string_view& text2Find, size_t fromPos, size_t toPos) const;
 	intptr_t searchInTarget(const wchar_t * Text2Find, size_t lenOfText2Find, size_t fromPos, size_t toPos) const;
 	void appendGenericText(const wchar_t * text2Append) const;
 	void addGenericText(const wchar_t * text2Append) const;
 	void addGenericText(const wchar_t * text2Append, intptr_t* mstart, intptr_t* mend) const;
-	intptr_t replaceTarget(const char* str2replace, intptr_t fromTargetPos = -1, intptr_t toTargetPos = -1) const;
+	intptr_t replaceTarget(const std::string& str2replace, intptr_t fromTargetPos = -1, intptr_t toTargetPos = -1) const;
 	intptr_t replaceTarget(const wchar_t * str2replace, intptr_t fromTargetPos = -1, intptr_t toTargetPos = -1) const;
 	intptr_t replaceTargetRegExMode(const wchar_t * re, intptr_t fromTargetPos = -1, intptr_t toTargetPos = -1) const;
-	void showAutoCompletion(size_t lenEntered, const char* list) const;
-	void showAutoCompletion(size_t lenEntered, const wchar_t* list) const;
-	void showCallTip(size_t startPos, const char* def) const;
-	void showCallTip(size_t startPos, const wchar_t* def) const;
+	void showAutoCompletion(size_t lenEntered, const std::string& list) const;
+	void showCallTip(size_t startPos, const std::string& def) const;
 	std::wstring getLine(size_t lineNumber) const;
 	void getLine(size_t lineNumber, char* line, size_t lineBufferLen) const;
 	void getLine(size_t lineNumber, wchar_t * line, size_t lineBufferLen) const;
