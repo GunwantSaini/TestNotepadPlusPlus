@@ -17,11 +17,12 @@
 
 #pragma once
 
-#include <vector>
 #include <windows.h>
+
 #include <commctrl.h>
 
-#define	IDI_SEPARATOR_ICON -1
+#include <vector>
+#include <utility>
 
 class IconList
 {
@@ -99,7 +100,7 @@ class ToolBarIcons
 public:
 	ToolBarIcons() = default;
 
-	void init(ToolBarButtonUnit *buttonUnitArray, int arraySize, const std::vector<DynamicCmdIcoBmp>& cmds2add);
+	void init(const ToolBarButtonUnit* buttonUnitArray, int arraySize, const std::vector<DynamicCmdIcoBmp>& cmds2add);
 	void create(HINSTANCE hInst, int iconSize);
 	void destroy();
 
