@@ -15,12 +15,21 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-#include <stdexcept>
-#include <memory>
 #include "ImageListSet.h"
-#include "Parameters.h"
+
+#include "windows.h"
+
+#include <cstdlib>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "NppDarkMode.h"
+#include "Parameters.h"
 #include "dpiManagerV2.h"
+#include "resource.h"
 
 void IconList::init(HINSTANCE hInst, int iconSize) 
 {
@@ -149,7 +158,7 @@ bool IconList::changeFluentIconColor(HICON* phIcon, const std::vector<std::pair<
 	bmi.bmiHeader.biCompression = BI_RGB;
 
 	pixels = std::make_unique<RGBQUAD[]>(static_cast<size_t>(bm.bmWidth) * bm.bmHeight);
-	if (!pixels || !::GetDIBits(hdcBitmap, ii.hbmColor, 0, bm.bmHeight, pixels.get(), &bmi, DIB_RGB_COLORS))
+	if (!::GetDIBits(hdcBitmap, ii.hbmColor, 0, bm.bmHeight, pixels.get(), &bmi, DIB_RGB_COLORS))
 	{
 		cleanup();
 		return false;
@@ -306,12 +315,12 @@ bool IconList::changeFluentIconColor(HICON* phIcon) const
 	return IconList::changeFluentIconColor(phIcon, colorMappings);
 }
 
-void ToolBarIcons::init(ToolBarButtonUnit *buttonUnitArray, int arraySize, const std::vector<DynamicCmdIcoBmp>& moreCmds)
+void ToolBarIcons::init(const ToolBarButtonUnit* buttonUnitArray, int arraySize, const std::vector<DynamicCmdIcoBmp>& cmds2add)
 {
 	for (int i = 0 ; i < arraySize ; ++i)
 		_tbiis.push_back(buttonUnitArray[i]);
 
-	_moreCmds = moreCmds;
+	_moreCmds = cmds2add;
 }
 
 void ToolBarIcons::reInit(int size)

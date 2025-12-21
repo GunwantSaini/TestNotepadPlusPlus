@@ -1510,8 +1510,8 @@ bool NppParameters::load()
 	std::wstring toolbarButtonsConfXmlPath(_userPath);
 	pathAppend(toolbarButtonsConfXmlPath, L"toolbarButtonsConf.xml");
 
-	_pXmlToolButtonsConfDoc = new TiXmlDocument(toolbarButtonsConfXmlPath);
-	loadOkay = _pXmlToolButtonsConfDoc->LoadFile();
+	_pXmlToolButtonsConfDoc = new NppXml::NewDocument();
+	loadOkay = NppXml::loadFile(_pXmlToolButtonsConfDoc, toolbarButtonsConfXmlPath.c_str());
 	if (!loadOkay)
 	{
 		delete _pXmlToolButtonsConfDoc;
