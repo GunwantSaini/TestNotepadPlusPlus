@@ -102,6 +102,7 @@ public:
 	std::wstring getCmdLangStr(std::vector<const char*> nodeNames, int cmdID, const wchar_t* defaultStr) const;
 	std::wstring getAttrNameStr(const wchar_t* defaultStr, const char* nodeL1Name, const char* nodeL2Name, const char* nodeL3Name = "name") const;
 	static std::wstring getAttrNameByIdStr(const wchar_t* defaultStr, NppXml::Node targetNode, const char* nodeL1Value, const char* nodeL1Name = "id", const char* nodeL2Name = "name");
+	std::string getLocalizedStrFromID(const char* strID, const std::string& defaultString) const;
 	std::wstring getLocalizedStrFromID(const char* strID, const std::wstring& defaultString) const;
 	void getMainMenuEntryName(std::wstring& dest, HMENU hMenu, const char* menuId, const wchar_t* defaultDest);
 
