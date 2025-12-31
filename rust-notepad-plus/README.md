@@ -56,20 +56,26 @@ rust-notepad-plus/
 ## Features
 
 ### Implemented ✅
-- [x] Project structure and workspace
+- [x] Project structure and workspace (8 modular crates)
 - [x] Core application architecture
-- [x] Buffer management
-- [x] Command system
-- [x] Basic Windows UI
-- [x] File I/O with encoding detection
-- [x] Text buffer (Ropey)
-- [x] Plugin system foundation
+- [x] Buffer management with encoding support
+- [x] Command system (200+ command IDs)
+- [x] File I/O with multi-encoding (UTF-8, UTF-16 LE/BE, ANSI)
+- [x] **Text editing** with Ropey (insert, delete, line access)
+- [x] **Search & Replace** engine (literal & regex, case-sensitive/insensitive)
+- [x] Encoding detection and conversion
+- [x] Plugin system foundation (FFI-compatible)
+- [x] Configuration framework (XML-based)
+- [x] Language type detection (20+ languages)
+- [x] EOL format detection (Windows/Unix/Mac)
+- [x] **Working examples** (4 demonstrations)
+- [x] **Test suite** (14 tests passing)
 
 ### In Progress 🚧
-- [ ] Main window with editor view
-- [ ] Menu and toolbar
-- [ ] Find/Replace dialog
-- [ ] Syntax highlighting
+- [ ] Main window with full Win32 UI
+- [ ] Menu and toolbar implementation
+- [ ] Find/Replace dialog UI
+- [ ] Syntax highlighting (tree-sitter integration)
 - [ ] Settings dialog
 
 ### Planned 📋
@@ -112,6 +118,57 @@ cargo test
 # Check (faster than build)
 cargo check
 ```
+
+### Running Examples
+
+The project includes 4 working examples demonstrating core functionality:
+
+```powershell
+# Basic file operations and buffer management
+cargo run --example basic_usage
+
+# Search and replace with regex support
+cargo run --example search_replace
+
+# Multi-encoding file handling (UTF-8, UTF-16, etc.)
+cargo run --example encoding_demo
+
+# Text editing with Ropey buffer
+cargo run --example text_editing
+```
+
+**Example Output:**
+```
+=== Notepad++ Rust Edition - Search & Replace Example ===
+Found 2 occurrences of 'hello':
+  1. Position 51-56: 'Hello'
+  2. Position 85-90: 'Hello'
+
+Found 2 println! calls:
+  1. 'println!("Hello, {}!", name)'
+  2. 'println!("Hello, Rust!")'
+
+✓ Example completed successfully!
+```
+
+### Running Tests
+
+```powershell
+# Run all tests
+cargo test
+
+# Test specific crate
+cargo test -p notepad-search
+cargo test -p notepad-core
+
+# Run tests with output
+cargo test -- --nocapture
+```
+
+**Current test results:**
+- ✅ notepad-core: 9/9 tests passing
+- ✅ notepad-search: 5/5 tests passing
+- ✅ Total: 14 tests passing
 
 ### Platform Support
 
