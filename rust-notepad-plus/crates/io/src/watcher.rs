@@ -1,6 +1,6 @@
 //! File system watching for external file changes
 
-use notify::{Watcher, RecursiveMode, Result};
+use notify::Result;
 use std::path::Path;
 
 pub struct FileWatcher {

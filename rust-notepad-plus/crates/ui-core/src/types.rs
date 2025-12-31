@@ -1,6 +1,5 @@
 //! Common types for platform-independent UI
 
-use std::path::PathBuf;
 use thiserror::Error;
 
 /// File filter for open/save dialogs
