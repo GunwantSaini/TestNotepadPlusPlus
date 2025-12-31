@@ -1,0 +1,20 @@
+[package]
+name = "notepad-ui-gtk"
+version = "8.0.0"
+edition = "2021"
+description = "GTK4 UI backend for Notepad++ Rust Edition (Linux)"
+
+[dependencies]
+notepad-core = { path = "../core" }
+notepad-ui-core = { path = "../ui-core" }
+notepad-editor = { path = "../editor" }
+notepad-search = { path = "../search" }
+
+# GTK4 bindings
+gtk4 = "0.7"
+glib = "0.18"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"

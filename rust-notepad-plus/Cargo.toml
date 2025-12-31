@@ -3,6 +3,7 @@ members = [
     "crates/core",
     "crates/ui-core",
     "crates/ui-windows",
+    "crates/ui-gtk",
     "crates/editor",
     "crates/lexer",
     "crates/plugins",
@@ -59,6 +60,9 @@ env_logger = "0.11"
 [target.'cfg(windows)'.dependencies]
 notepad-ui-windows = { path = "crates/ui-windows" }
 windows = { workspace = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+notepad-ui-gtk = { path = "crates/ui-gtk" }
 
 [build-dependencies]
 winres = "0.1"
