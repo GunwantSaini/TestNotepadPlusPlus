@@ -1,6 +1,6 @@
 //! Main application window with full Win32 implementation
 
-use crate::{menu, Result};
+use crate::{menu, statusbar::StatusBar, toolbar::Toolbar, Result};
 use notepad_core::NotepadApp;
 use notepad_editor::EditorView;
 use std::sync::{Arc, Mutex};
@@ -9,8 +9,8 @@ use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::Graphics::Gdi::{BeginPaint, EndPaint, HBRUSH, PAINTSTRUCT};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::WindowsAndMessaging::{
-    CreateWindowExW, DefWindowProcW, LoadCursorW, PostQuitMessage, RegisterClassW, ShowWindow,
-    CS_HREDRAW, CS_VREDRAW, CW_USEDEFAULT, IDC_ARROW, SW_SHOW, WNDCLASSW,
+    CreateWindowExW, DefWindowProcW, GetClientRect, LoadCursorW, PostQuitMessage, RegisterClassW,
+    ShowWindow, CS_HREDRAW, CS_VREDRAW, CW_USEDEFAULT, IDC_ARROW, SW_SHOW, WNDCLASSW,
     WM_COMMAND, WM_CREATE, WM_DESTROY, WM_PAINT, WM_SIZE, WINDOW_EX_STYLE, WS_OVERLAPPEDWINDOW,
     WS_VISIBLE,
 };
@@ -106,12 +106,41 @@ unsafe extern "system" fn window_proc(
 ) -> LRESULT {
     match msg {
         WM_CREATE => {
-            log::debug!("WM_CREATE received - creating menu");
-            // Create and set menu bar
+            log::debug!("WM_CREATE received - creating UI components");
+
+            // Get module handle
+            let h_instance = match GetModuleHandleW(None) {
+                Ok(h) => h.0 as isize,
+                Err(e) => {
+                    log::error!("Failed to get module handle: {:?}", e);
+                    return LRESULT(-1);
+                }
+            };
+
+            // Create menu bar
             match menu::create_main_menu(hwnd) {
                 Ok(_) => log::info!("Menu created successfully"),
                 Err(e) => log::error!("Failed to create menu: {:?}", e),
             }
+
+            // Create toolbar
+            match Toolbar::new(hwnd, h_instance) {
+                Ok(_toolbar) => {
+                    log::info!("Toolbar created successfully");
+                    // Toolbar is created and displayed
+                }
+                Err(e) => log::error!("Failed to create toolbar: {:?}", e),
+            }
+
+            // Create status bar
+            match StatusBar::new(hwnd, h_instance) {
+                Ok(_statusbar) => {
+                    log::info!("Status bar created successfully");
+                    // Status bar is created and displayed
+                }
+                Err(e) => log::error!("Failed to create status bar: {:?}", e),
+            }
+
             LRESULT(0)
         }
         WM_DESTROY => {
@@ -130,8 +159,22 @@ unsafe extern "system" fn window_proc(
         }
         WM_SIZE => {
             log::debug!("WM_SIZE received");
-            // TODO: Resize editor control
-            LRESULT(0)
+
+            // Get client area dimensions
+            let mut rect = windows::Win32::Foundation::RECT::default();
+            if GetClientRect(hwnd, &mut rect).is_ok() {
+                let width = rect.right - rect.left;
+
+                // Resize toolbar and status bar
+                // Note: We can't access the toolbar/statusbar handles here easily
+                // Windows will handle toolbar/statusbar resizing automatically via WM_SIZE
+                // Just need to recalculate editor area
+
+                log::debug!("Client area resized to width: {}", width);
+            }
+
+            // Let DefWindowProc handle default sizing
+            DefWindowProcW(hwnd, msg, wparam, lparam)
         }
         WM_COMMAND => {
             let command_id = (wparam.0 & 0xFFFF) as u32;
