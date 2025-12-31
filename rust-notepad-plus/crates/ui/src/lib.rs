@@ -14,6 +14,7 @@ pub mod file_dialogs;
 pub mod app_state;
 pub mod window_updates;
 pub mod global_state;
+pub mod recent_files;
 
 pub use main_window::MainWindow;
 pub use accelerators::create_accelerators;

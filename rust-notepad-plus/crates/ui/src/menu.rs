@@ -1,10 +1,12 @@
 //! Menu management for the application
 
 use notepad_core::CommandId;
-use windows::core::w;
+use std::path::PathBuf;
+use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::HWND;
 use windows::Win32::UI::WindowsAndMessaging::{
-    AppendMenuW, CreateMenu, CreatePopupMenu, SetMenu, HMENU, MF_POPUP, MF_SEPARATOR, MF_STRING,
+    AppendMenuW, CreateMenu, CreatePopupMenu, SetMenu, GetMenu, GetSubMenu, DeleteMenu, InsertMenuW,
+    HMENU, MF_BYPOSITION, MF_POPUP, MF_SEPARATOR, MF_STRING,
 };
 
 /// Create the main menu bar
@@ -54,6 +56,10 @@ pub fn create_main_menu(hwnd: HWND) -> Result<HMENU, windows::core::Error> {
         AppendMenuW(view_menu, MF_STRING, CommandId::ViewZoomIn.to_menu_id() as usize, w!("Zoom &In\tCtrl++"))?;
         AppendMenuW(view_menu, MF_STRING, CommandId::ViewZoomOut.to_menu_id() as usize, w!("Zoom &Out\tCtrl+-"))?;
         AppendMenuW(view_menu, MF_STRING, CommandId::ViewZoomRestore.to_menu_id() as usize, w!("&Restore Default Zoom\tCtrl+0"))?;
+        AppendMenuW(view_menu, MF_SEPARATOR, 0, None)?;
+        AppendMenuW(view_menu, MF_STRING, CommandId::ViewWordWrap.to_menu_id() as usize, w!("&Word wrap"))?;
+        AppendMenuW(view_menu, MF_STRING, CommandId::ViewShowWhitespace.to_menu_id() as usize, w!("Show &Whitespace and TAB"))?;
+        AppendMenuW(view_menu, MF_STRING, CommandId::ViewShowEol.to_menu_id() as usize, w!("Show End of &Line"))?;
         AppendMenuW(view_menu, MF_SEPARATOR, 0, None)?;
         AppendMenuW(view_menu, MF_STRING, CommandId::ViewFullScreen.to_menu_id() as usize, w!("&Full Screen\tF11"))?;
 
@@ -105,7 +111,102 @@ pub fn handle_menu_command(command_id: u32) -> Option<CommandId> {
         44001 => Some(CommandId::ViewFullScreen),
         44010 => Some(CommandId::ViewZoomIn),
         44011 => Some(CommandId::ViewZoomOut),
+        44012 => Some(CommandId::ViewZoomRestore),
+        44020 => Some(CommandId::ViewWordWrap),
+        44021 => Some(CommandId::ViewShowWhitespace),
+        44022 => Some(CommandId::ViewShowEol),
+
+        // Recent files: 45000-45009
+        45000..=45009 => Some(CommandId::Custom(command_id)),
 
         _ => None,
     }
+}
+
+/// Update the File menu with recent files
+pub fn update_recent_files_menu(hwnd: HWND, recent_files: &[PathBuf]) {
+    unsafe {
+        let menu_bar = GetMenu(hwnd);
+        if menu_bar.0 == 0 {
+            return;
+        }
+
+        // Get the File menu (index 0)
+        let file_menu = GetSubMenu(menu_bar, 0);
+        if file_menu.0 == 0 {
+            return;
+        }
+
+        // Remove existing recent files items (positions 9-19, counting from Print separator)
+        // File menu structure: New, Open, |, Save, SaveAs, SaveAll, |, Close, CloseAll, |, Print, |, [Recent Files], |, Exit
+        // After Print separator is position 11, before Exit separator
+
+        // Find the position before Exit (we'll insert recent files before the last separator)
+        // For simplicity, we'll add recent files after Print separator at position 12
+
+        // First, remove any existing recent files menu items (IDs 45000-45009)
+        for id in 45000..=45009 {
+            let mut pos = 0;
+            while pos < 50 {
+                // Try to remove - if it doesn't exist, it will fail silently
+                if DeleteMenu(file_menu, id, MF_BYPOSITION).is_err() {
+                    break;
+                }
+                pos += 1;
+            }
+        }
+
+        // If we have recent files, add them
+        if !recent_files.is_empty() {
+            // Insert separator before recent files (position 12, after Print separator)
+            let separator_pos = 12;
+
+            // Add each recent file
+            for (i, path) in recent_files.iter().enumerate() {
+                let filename = path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("Unknown");
+
+                let menu_text = format!("&{} {}", i + 1, filename);
+                let menu_text_wide: Vec<u16> = menu_text.encode_utf16().chain(std::iter::once(0)).collect();
+
+                let menu_id = 45000 + i as u32;
+                InsertMenuW(
+                    file_menu,
+                    separator_pos + i as u32,
+                    MF_BYPOSITION | MF_STRING,
+                    menu_id as usize,
+                    PCWSTR(menu_text_wide.as_ptr()),
+                ).ok();
+            }
+
+            // Add separator after recent files
+            InsertMenuW(
+                file_menu,
+                separator_pos + recent_files.len() as u32,
+                MF_BYPOSITION | MF_SEPARATOR,
+                0,
+                None,
+            ).ok();
+        }
+
+        // Force menu redraw
+        use windows::Win32::UI::WindowsAndMessaging::DrawMenuBar;
+        DrawMenuBar(hwnd).ok();
+    }
+}
+
+/// Handle opening a recent file
+pub fn open_recent_file(hwnd: HWND, command_id: u32) -> Option<PathBuf> {
+    let file_index = (command_id - 45000) as usize;
+
+    crate::global_state::read_state(|state| {
+        let files = state.get_recent_files().get_files();
+        if file_index < files.len() {
+            Some(files[file_index].clone())
+        } else {
+            None
+        }
+    })
 }

@@ -54,6 +54,7 @@ pub enum CommandId {
     ViewSplitHorizontal,
     ViewSplitVertical,
     ViewUnsplit,
+    ViewWordWrap,
     ViewShowWhitespace,
     ViewShowEol,
     ViewShowIndent,
@@ -232,6 +233,10 @@ impl CommandId {
             CommandId::ViewFullScreen => 44001,
             CommandId::ViewZoomIn => 44010,
             CommandId::ViewZoomOut => 44011,
+            CommandId::ViewZoomRestore => 44012,
+            CommandId::ViewWordWrap => 44020,
+            CommandId::ViewShowWhitespace => 44021,
+            CommandId::ViewShowEol => 44022,
 
             CommandId::Custom(id) => *id,
             _ => 0, // TODO: Complete mapping

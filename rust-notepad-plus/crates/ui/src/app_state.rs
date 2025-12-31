@@ -1,5 +1,6 @@
 //! Application state management
 
+use crate::recent_files::RecentFiles;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -11,6 +12,8 @@ pub struct AppState {
     pub cursor_line: usize,
     pub cursor_column: usize,
     pub total_lines: usize,
+    pub recent_files: RecentFiles,
+    pub word_wrap_enabled: bool,
 }
 
 impl Default for AppState {
@@ -21,6 +24,8 @@ impl Default for AppState {
             cursor_line: 1,
             cursor_column: 1,
             total_lines: 1,
+            recent_files: RecentFiles::new(),
+            word_wrap_enabled: false,
         }
     }
 }
@@ -32,8 +37,32 @@ impl AppState {
 
     /// Set the current file path
     pub fn set_current_file(&mut self, path: Option<PathBuf>) {
+        // Add to recent files if we're setting a real file
+        if let Some(ref p) = path {
+            self.recent_files.add_file(p.clone());
+        }
         self.current_file = path;
         self.is_dirty = false;
+    }
+
+    /// Add a file to recent files without changing current file
+    pub fn add_to_recent(&mut self, path: PathBuf) {
+        self.recent_files.add_file(path);
+    }
+
+    /// Get recent files list
+    pub fn get_recent_files(&self) -> &RecentFiles {
+        &self.recent_files
+    }
+
+    /// Toggle word wrap
+    pub fn toggle_word_wrap(&mut self) {
+        self.word_wrap_enabled = !self.word_wrap_enabled;
+    }
+
+    /// Set word wrap state
+    pub fn set_word_wrap(&mut self, enabled: bool) {
+        self.word_wrap_enabled = enabled;
     }
 
     /// Mark the document as modified

@@ -151,6 +151,10 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
                             unsafe {
                                 crate::window_updates::update_window_title(hwnd, state);
                                 crate::window_updates::update_status_bar_position(hwnd, state);
+
+                                // Update recent files menu
+                                let files_vec: Vec<_> = state.get_recent_files().get_files().iter().cloned().collect();
+                                crate::menu::update_recent_files_menu(hwnd, &files_vec);
                             }
                         });
 
@@ -223,6 +227,10 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
                     crate::global_state::read_state(|state| {
                         unsafe {
                             crate::window_updates::update_window_title(hwnd, state);
+
+                            // Update recent files menu
+                            let files_vec: Vec<_> = state.get_recent_files().get_files().iter().cloned().collect();
+                            crate::menu::update_recent_files_menu(hwnd, &files_vec);
                         }
                     });
                 }
@@ -288,6 +296,10 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
                     crate::global_state::read_state(|state| {
                         unsafe {
                             crate::window_updates::update_window_title(hwnd, state);
+
+                            // Update recent files menu
+                            let files_vec: Vec<_> = state.get_recent_files().get_files().iter().cloned().collect();
+                            crate::menu::update_recent_files_menu(hwnd, &files_vec);
                         }
                     });
                 }
@@ -333,6 +345,60 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
         }
 
         // View commands
+        CommandId::ViewWordWrap => {
+            log::info!("Toggling word wrap");
+
+            // Toggle word wrap in state
+            crate::global_state::with_state(|state| {
+                state.toggle_word_wrap();
+                let enabled = state.word_wrap_enabled;
+
+                // Apply word wrap to editor
+                unsafe {
+                    use windows::Win32::UI::WindowsAndMessaging::{GetWindowLongPtrW, SetWindowLongPtrW, GWL_STYLE};
+                    use windows::Win32::UI::WindowsAndMessaging::WS_HSCROLL;
+
+                    let current_style = GetWindowLongPtrW(editor_hwnd, GWL_STYLE);
+
+                    if enabled {
+                        // Remove horizontal scroll to enable word wrap
+                        let new_style = current_style & !(WS_HSCROLL.0 as isize);
+                        SetWindowLongPtrW(editor_hwnd, GWL_STYLE, new_style);
+                    } else {
+                        // Add horizontal scroll to disable word wrap
+                        let new_style = current_style | (WS_HSCROLL.0 as isize);
+                        SetWindowLongPtrW(editor_hwnd, GWL_STYLE, new_style);
+                    }
+
+                    // Force redraw
+                    use windows::Win32::UI::WindowsAndMessaging::{SetWindowPos, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_FRAMECHANGED};
+                    SetWindowPos(editor_hwnd, None, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED).ok();
+                }
+
+                log::info!("Word wrap {}", if enabled { "enabled" } else { "disabled" });
+            });
+
+            true
+        }
+
+        CommandId::ViewShowWhitespace => {
+            show_message(
+                hwnd,
+                "Show Whitespace",
+                "Show whitespace feature not yet implemented",
+            );
+            false
+        }
+
+        CommandId::ViewShowEol => {
+            show_message(
+                hwnd,
+                "Show End of Line",
+                "Show end of line feature not yet implemented",
+            );
+            false
+        }
+
         CommandId::ViewFullScreen => {
             show_message(
                 hwnd,
@@ -346,6 +412,71 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
         CommandId::HelpAbout => {
             show_about_dialog(hwnd);
             true
+        }
+
+        // Handle recent file commands
+        CommandId::Custom(id) if (45000..=45009).contains(&id) => {
+            log::info!("Opening recent file with ID: {}", id);
+            if let Some(file_path) = crate::menu::open_recent_file(hwnd, id) {
+                log::info!("Opening recent file: {:?}", file_path);
+                // Reuse the FileOpen logic but with a specific file path
+                match std::fs::read_to_string(&file_path) {
+                    Ok(contents) => {
+                        unsafe {
+                            let text_wide: Vec<u16> = contents.encode_utf16().chain(std::iter::once(0)).collect();
+                            SendMessageW(
+                                editor_hwnd,
+                                WM_SETTEXT,
+                                WPARAM(0),
+                                LPARAM(text_wide.as_ptr() as isize),
+                            );
+                        }
+
+                        // Update state
+                        crate::global_state::with_state(|state| {
+                            state.set_current_file(Some(file_path.clone()));
+                            state.set_dirty(false);
+                        });
+
+                        // Update UI
+                        crate::global_state::read_state(|state| {
+                            unsafe {
+                                crate::window_updates::update_window_title(hwnd, state);
+                                crate::window_updates::update_status_bar_position(hwnd, state);
+
+                                // Update recent files menu
+                                let files_vec: Vec<_> = state.get_recent_files().get_files().iter().cloned().collect();
+                                crate::menu::update_recent_files_menu(hwnd, &files_vec);
+                            }
+                        });
+
+                        log::info!("Recent file loaded successfully: {:?}", file_path);
+                        true
+                    }
+                    Err(e) => {
+                        log::error!("Failed to read recent file: {}", e);
+                        show_error(hwnd, "File Open Error", &format!("Failed to open file: {}\n\nThe file may have been moved or deleted.", e));
+
+                        // Remove from recent files list
+                        crate::global_state::with_state(|state| {
+                            state.recent_files.remove_file(&file_path);
+                        });
+
+                        // Update menu
+                        crate::global_state::read_state(|state| {
+                            unsafe {
+                                let files_vec: Vec<_> = state.get_recent_files().get_files().iter().cloned().collect();
+                                crate::menu::update_recent_files_menu(hwnd, &files_vec);
+                            }
+                        });
+
+                        false
+                    }
+                }
+            } else {
+                log::warn!("Recent file not found for ID: {}", id);
+                false
+            }
         }
 
         _ => {
