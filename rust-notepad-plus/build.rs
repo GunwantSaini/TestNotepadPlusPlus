@@ -3,6 +3,12 @@
 fn main() {
     #[cfg(target_os = "windows")]
     {
+        // Link Windows libraries
+        println!("cargo:rustc-link-lib=kernel32");
+        println!("cargo:rustc-link-lib=user32");
+        println!("cargo:rustc-link-lib=gdi32");
+        println!("cargo:rustc-link-lib=shell32");
+
         // Embed Windows resources (icon, manifest, version info)
         let mut res = winres::WindowsResource::new();
         res.set_icon("assets/notepad++.ico")

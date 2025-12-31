@@ -8,6 +8,7 @@ use anyhow::Result;
 use log::info;
 use notepad_core::NotepadApp;
 use notepad_ui::MainWindow;
+use windows::Win32::UI::WindowsAndMessaging::{DispatchMessageW, GetMessageW, TranslateMessage, MSG};
 
 fn main() -> Result<()> {
     // Initialize logging
@@ -31,14 +32,18 @@ fn main() -> Result<()> {
 
     // Show the window
     main_window.show();
+    info!("Main window shown");
 
-    info!("Application running (stub mode - no message loop yet)");
+    // Windows message loop
+    info!("Entering message loop...");
+    let mut msg = MSG::default();
 
-    // TODO: Implement Windows message loop
-    // This requires:
-    // - GetMessageW to receive messages
-    // - TranslateMessage to process keyboard input
-    // - DispatchMessageW to route messages to window procedure
+    unsafe {
+        while GetMessageW(&mut msg, None, 0, 0).as_bool() {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
+        }
+    }
 
     info!("Application shutting down");
     Ok(())

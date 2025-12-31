@@ -11,6 +11,20 @@ members = [
 ]
 resolver = "2"
 
+[workspace.dependencies]
+windows = { version = "0.52", features = [
+    "implement",
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Controls",
+    "Win32_Graphics_Gdi",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Threading",
+    "Win32_System_Memory",
+    "Win32_UI_Shell",
+    "Win32_UI_Input_KeyboardAndMouse",
+] }
+
 [package]
 name = "notepad-plus-rust"
 version = "8.0.0"
@@ -35,13 +49,7 @@ notepad-io = { path = "crates/io" }
 notepad-search = { path = "crates/search" }
 
 # Windows API
-windows = { version = "0.58", features = [
-    "Win32_Foundation",
-    "Win32_UI_WindowsAndMessaging",
-    "Win32_UI_Controls",
-    "Win32_System_LibraryLoader",
-    "Win32_System_Threading",
-] }
+windows = { workspace = true }
 
 # Error handling
 anyhow = "1.0"

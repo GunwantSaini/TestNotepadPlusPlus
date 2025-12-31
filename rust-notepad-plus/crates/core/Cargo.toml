@@ -12,10 +12,7 @@ notepad-config = { path = "../config" }
 notepad-editor = { path = "../editor" }
 
 # Windows API
-windows = { version = "0.58", features = [
-    "Win32_Foundation",
-    "Win32_System_Threading",
-] }
+windows = { workspace = true }
 
 # Utilities
 anyhow = "1.0"
