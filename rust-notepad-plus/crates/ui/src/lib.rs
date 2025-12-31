@@ -14,8 +14,8 @@ pub enum UiError {
     #[error("Window creation failed")]
     WindowCreationFailed,
 
-    #[error("Windows API error: {0}")]
-    WindowsApi(#[from] windows::core::Error),
+    #[error("Other error: {0}")]
+    Other(String),
 }
 
 pub type Result<T> = std::result::Result<T, UiError>;

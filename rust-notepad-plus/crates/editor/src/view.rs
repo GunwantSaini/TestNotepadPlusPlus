@@ -1,20 +1,16 @@
 //! Editor view widget
 
-use crate::{TextBuffer, Result};
-use windows::Win32::Foundation::HWND;
+use crate::TextBuffer;
 
 pub struct EditorView {
-    hwnd: HWND,
     buffer: TextBuffer,
 }
 
 impl EditorView {
-    pub fn new(parent: HWND) -> Result<Self> {
-        // TODO: Create Win32 window for editor
-        Ok(Self {
-            hwnd: HWND(0),
+    pub fn new() -> Self {
+        Self {
             buffer: TextBuffer::new(),
-        })
+        }
     }
 
     pub fn set_text(&mut self, text: String) {
@@ -25,7 +21,11 @@ impl EditorView {
         self.buffer.get_text()
     }
 
-    pub fn hwnd(&self) -> HWND {
-        self.hwnd
+    pub fn buffer(&self) -> &TextBuffer {
+        &self.buffer
+    }
+
+    pub fn buffer_mut(&mut self) -> &mut TextBuffer {
+        &mut self.buffer
     }
 }

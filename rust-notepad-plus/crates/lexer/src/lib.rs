@@ -6,7 +6,7 @@ pub mod registry;
 pub use language::Language;
 pub use registry::LanguageRegistry;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LanguageType {
     Text,
     C,

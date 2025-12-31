@@ -3,102 +3,50 @@
 use crate::Result;
 use notepad_core::NotepadApp;
 use notepad_editor::EditorView;
-use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
-use windows::Win32::UI::WindowsAndMessaging::*;
-use windows::core::w;
+
+// Placeholder window handle type
+#[derive(Debug, Clone, Copy)]
+pub struct WindowHandle(usize);
 
 pub struct MainWindow {
-    hwnd: HWND,
+    handle: WindowHandle,
     editor: Option<EditorView>,
 }
 
 impl MainWindow {
-    pub fn new(h_instance: HINSTANCE, _app: &NotepadApp) -> Result<Self> {
-        log::info!("Creating main window");
+    /// Create a new main window
+    ///
+    /// Note: This is a simplified implementation for demonstration.
+    /// Full Win32 window creation will be implemented later with proper
+    /// windows-rs bindings.
+    pub fn new(_app: &NotepadApp) -> Result<Self> {
+        log::info!("Creating main window (stub implementation)");
 
-        // Register window class
-        let class_name = w!("NotepadPlusRust");
-
-        let wc = WNDCLASSW {
-            lpfnWndProc: Some(Self::wnd_proc),
-            hInstance: h_instance,
-            lpszClassName: class_name,
-            style: CS_HREDRAW | CS_VREDRAW,
-            hCursor: unsafe { LoadCursorW(None, IDC_ARROW)? },
-            hbrBackground: unsafe { GetSysColorBrush(COLOR_WINDOW) },
-            ..Default::default()
-        };
-
-        unsafe {
-            if RegisterClassW(&wc) == 0 {
-                return Err(crate::UiError::WindowCreationFailed);
-            }
-        }
-
-        // Create main window
-        let hwnd = unsafe {
-            CreateWindowExW(
-                WINDOW_EX_STYLE::default(),
-                class_name,
-                w!("Notepad++ Rust Edition"),
-                WS_OVERLAPPEDWINDOW,
-                CW_USEDEFAULT,
-                CW_USEDEFAULT,
-                1024,
-                768,
-                None,
-                None,
-                h_instance,
-                None,
-            )?
-        };
-
-        log::info!("Main window created: {:?}", hwnd);
+        // TODO: Implement actual Win32 window creation
+        // This requires:
+        // 1. Register window class with RegisterClassW
+        // 2. Create window with CreateWindowExW
+        // 3. Set up window procedure for message handling
 
         Ok(Self {
-            hwnd,
-            editor: None,
+            handle: WindowHandle(0),
+            editor: Some(EditorView::new()),
         })
     }
 
+    /// Show the window
     pub fn show(&self) {
-        unsafe {
-            ShowWindow(self.hwnd, SW_SHOW);
-            let _ = UpdateWindow(self.hwnd);
-        }
+        log::info!("Showing main window (stub)");
+        // TODO: Call ShowWindow with SW_SHOW
     }
 
-    pub fn hwnd(&self) -> HWND {
-        self.hwnd
+    /// Get window handle
+    pub fn handle(&self) -> WindowHandle {
+        self.handle
     }
 
-    unsafe extern "system" fn wnd_proc(
-        hwnd: HWND,
-        msg: u32,
-        wparam: WPARAM,
-        lparam: LPARAM,
-    ) -> LRESULT {
-        match msg {
-            WM_CREATE => {
-                log::debug!("WM_CREATE");
-                LRESULT(0)
-            }
-            WM_DESTROY => {
-                log::info!("WM_DESTROY");
-                PostQuitMessage(0);
-                LRESULT(0)
-            }
-            WM_SIZE => {
-                log::debug!("WM_SIZE");
-                LRESULT(0)
-            }
-            WM_PAINT => {
-                let mut ps = PAINTSTRUCT::default();
-                let hdc = BeginPaint(hwnd, &mut ps);
-                EndPaint(hwnd, &ps);
-                LRESULT(0)
-            }
-            _ => DefWindowProcW(hwnd, msg, wparam, lparam),
-        }
+    /// Get editor view
+    pub fn editor(&self) -> Option<&EditorView> {
+        self.editor.as_ref()
     }
 }

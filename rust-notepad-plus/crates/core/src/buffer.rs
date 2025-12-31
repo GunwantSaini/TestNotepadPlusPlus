@@ -106,6 +106,8 @@ impl Buffer {
             .ok()
             .and_then(|m| m.modified().ok());
 
+        let eol_format = Self::detect_eol_format(&content);
+
         Self {
             id: BufferId::new(),
             file_path: Some(path),
@@ -114,7 +116,7 @@ impl Buffer {
             is_dirty: false,
             is_readonly: false,
             encoding,
-            eol_format: Self::detect_eol_format(&content),
+            eol_format,
             language: String::from("Normal Text"), // Will be detected later
             file_timestamp,
             position_info: PositionInfo::default(),

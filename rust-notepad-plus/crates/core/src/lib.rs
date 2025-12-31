@@ -35,8 +35,8 @@ pub enum NotepadError {
     #[error("Command error: {0}")]
     Command(String),
 
-    #[error("Windows API error: {0}")]
-    WindowsApi(#[from] windows::core::Error),
+    #[error("Other error: {0}")]
+    Other(String),
 }
 
 pub type Result<T> = std::result::Result<T, NotepadError>;

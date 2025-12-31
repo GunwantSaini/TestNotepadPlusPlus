@@ -15,8 +15,8 @@ pub enum EditorError {
     #[error("Invalid position: {0}")]
     InvalidPosition(usize),
 
-    #[error("Windows API error: {0}")]
-    WindowsApi(#[from] windows::core::Error),
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
 }
 
 pub type Result<T> = std::result::Result<T, EditorError>;

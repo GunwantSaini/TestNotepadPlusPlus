@@ -7,13 +7,6 @@ edition = "2021"
 # Text buffer
 ropey = "1.6"
 
-# Windows API
-windows = { version = "0.58", features = [
-    "Win32_Foundation",
-    "Win32_UI_WindowsAndMessaging",
-    "Win32_Graphics_Gdi",
-] }
-
 # Utilities
 anyhow = "1.0"
 thiserror = "1.0"
