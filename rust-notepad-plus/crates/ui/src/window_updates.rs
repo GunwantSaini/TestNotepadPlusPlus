@@ -41,6 +41,31 @@ pub unsafe fn update_status_bar_position(hwnd: HWND, state: &AppState) {
     }
 }
 
+/// Update the status bar encoding/EOL section
+pub unsafe fn update_status_bar_encoding(hwnd: HWND, state: &AppState) {
+    // Find the status bar (it's a child window of class "msctls_statusbar32")
+    let statusbar_hwnd = FindWindowExW(
+        hwnd,
+        None,
+        windows::core::w!("msctls_statusbar32"),
+        PCWSTR::null(),
+    );
+
+    if statusbar_hwnd.0 != 0 {
+        let encoding_text = state.get_encoding_status();
+        let text_wide: Vec<u16> = encoding_text.encode_utf16().chain(std::iter::once(0)).collect();
+
+        // SB_SETTEXT with part 2 (encoding section)
+        const SB_SETTEXT: u32 = 0x0401;
+        SendMessageW(
+            statusbar_hwnd,
+            SB_SETTEXT,
+            WPARAM(2), // Part 2 is the encoding section
+            LPARAM(text_wide.as_ptr() as isize),
+        );
+    }
+}
+
 /// Get current cursor position from editor
 pub unsafe fn get_editor_cursor_position(hwnd: HWND) -> (usize, usize, usize) {
     use windows::Win32::UI::Controls::EM_GETSEL;

@@ -1,6 +1,7 @@
 //! Application state management
 
 use crate::recent_files::RecentFiles;
+use crate::encoding::{Encoding, LineEnding};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -14,6 +15,8 @@ pub struct AppState {
     pub total_lines: usize,
     pub recent_files: RecentFiles,
     pub word_wrap_enabled: bool,
+    pub current_encoding: Encoding,
+    pub current_line_ending: LineEnding,
 }
 
 impl Default for AppState {
@@ -26,6 +29,13 @@ impl Default for AppState {
             total_lines: 1,
             recent_files: RecentFiles::new(),
             word_wrap_enabled: false,
+            current_encoding: Encoding::Utf8,
+            current_line_ending: {
+                #[cfg(windows)]
+                { LineEnding::Windows }
+                #[cfg(not(windows))]
+                { LineEnding::Unix }
+            },
         }
     }
 }
@@ -65,9 +75,28 @@ impl AppState {
         self.word_wrap_enabled = enabled;
     }
 
+    /// Set encoding
+    pub fn set_encoding(&mut self, encoding: Encoding) {
+        self.current_encoding = encoding;
+        self.is_dirty = true;
+    }
+
+    /// Set line ending
+    pub fn set_line_ending(&mut self, line_ending: LineEnding) {
+        self.current_line_ending = line_ending;
+        self.is_dirty = true;
+    }
+
     /// Mark the document as modified
     pub fn set_dirty(&mut self, dirty: bool) {
         self.is_dirty = dirty;
+    }
+
+    /// Get status bar encoding/EOL string
+    pub fn get_encoding_status(&self) -> String {
+        format!("{} | {}",
+            self.current_encoding.display_name(),
+            self.current_line_ending.short_name())
     }
 
     /// Update cursor position

@@ -126,8 +126,14 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
             log::info!("Opening File Open dialog");
             if let Some(file_path) = show_open_dialog(hwnd) {
                 log::info!("Opening file: {:?}", file_path);
-                match fs::read_to_string(&file_path) {
-                    Ok(contents) => {
+                // Read file with encoding detection
+                match crate::encoding::Encoding::read_file_with_detection(&file_path) {
+                    Ok((contents, detected_encoding)) => {
+                        // Detect line ending
+                        let detected_line_ending = crate::encoding::LineEnding::detect(&contents);
+
+                        log::info!("Detected encoding: {:?}, line ending: {:?}", detected_encoding, detected_line_ending);
+
                         // Load the file contents into the editor
                         unsafe {
                             let text_wide: Vec<u16> =
@@ -140,10 +146,12 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
                             );
                         }
 
-                        // Update state
+                        // Update state with encoding and line ending info
                         crate::global_state::with_state(|state| {
                             state.set_current_file(Some(file_path.clone()));
                             state.set_dirty(false);
+                            state.current_encoding = detected_encoding;
+                            state.current_line_ending = detected_line_ending;
                         });
 
                         // Update UI
@@ -151,6 +159,7 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
                             unsafe {
                                 crate::window_updates::update_window_title(hwnd, state);
                                 crate::window_updates::update_status_bar_position(hwnd, state);
+                                crate::window_updates::update_status_bar_encoding(hwnd, state);
 
                                 // Update recent files menu
                                 let files_vec: Vec<_> = state.get_recent_files().get_files().iter().cloned().collect();
@@ -177,6 +186,11 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
             log::info!("Opening File Save dialog");
             if let Some(file_path) = show_save_dialog(hwnd, Some("untitled.txt")) {
                 log::info!("Saving file: {:?}", file_path);
+                // Get encoding and line ending from state
+                let (encoding, line_ending) = crate::global_state::read_state(|state| {
+                    (state.current_encoding, state.current_line_ending)
+                });
+
                 // Get text from editor
                 let save_result = unsafe {
                     use windows::Win32::UI::WindowsAndMessaging::WM_GETTEXT;
@@ -190,9 +204,14 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
 
                     if len.0 > 0 {
                         let text = String::from_utf16_lossy(&buffer[..len.0 as usize]);
-                        match fs::write(&file_path, text.as_bytes()) {
+
+                        // Convert line endings
+                        let text_with_line_endings = crate::encoding::LineEnding::convert(&text, line_ending);
+
+                        // Write file with encoding
+                        match crate::encoding::Encoding::write_file_with_encoding(&file_path, &text_with_line_endings, encoding) {
                             Ok(_) => {
-                                log::info!("File saved successfully: {:?}", file_path);
+                                log::info!("File saved successfully: {:?} (encoding: {:?}, line ending: {:?})", file_path, encoding, line_ending);
                                 show_message(
                                     hwnd,
                                     "File Saved",
@@ -246,6 +265,11 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
             log::info!("Opening Save As dialog");
             if let Some(file_path) = show_save_dialog(hwnd, None) {
                 log::info!("Saving file as: {:?}", file_path);
+                // Get encoding and line ending from state
+                let (encoding, line_ending) = crate::global_state::read_state(|state| {
+                    (state.current_encoding, state.current_line_ending)
+                });
+
                 // Get text from editor
                 let save_result = unsafe {
                     use windows::Win32::UI::WindowsAndMessaging::WM_GETTEXT;
@@ -259,9 +283,14 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
 
                     if len.0 > 0 {
                         let text = String::from_utf16_lossy(&buffer[..len.0 as usize]);
-                        match fs::write(&file_path, text.as_bytes()) {
+
+                        // Convert line endings
+                        let text_with_line_endings = crate::encoding::LineEnding::convert(&text, line_ending);
+
+                        // Write file with encoding
+                        match crate::encoding::Encoding::write_file_with_encoding(&file_path, &text_with_line_endings, encoding) {
                             Ok(_) => {
-                                log::info!("File saved successfully: {:?}", file_path);
+                                log::info!("File saved successfully: {:?} (encoding: {:?}, line ending: {:?})", file_path, encoding, line_ending);
                                 show_message(
                                     hwnd,
                                     "File Saved",
