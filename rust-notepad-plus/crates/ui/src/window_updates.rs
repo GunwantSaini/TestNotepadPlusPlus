@@ -3,7 +3,10 @@
 use crate::app_state::AppState;
 use windows::core::PCWSTR;
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
-use windows::Win32::UI::WindowsAndMessaging::{FindWindowExW, SendMessageW, SetWindowTextW, WM_SETTEXT};
+use windows::Win32::UI::WindowsAndMessaging::{
+    FindWindowExW, MessageBoxW, SendMessageW, SetWindowTextW, MB_ICONQUESTION, MB_YESNOCANCEL,
+    WM_SETTEXT,
+};
 
 /// Update the window title based on app state
 pub unsafe fn update_window_title(hwnd: HWND, state: &AppState) {
@@ -88,4 +91,20 @@ pub unsafe fn get_editor_cursor_position(hwnd: HWND) -> (usize, usize, usize) {
     } else {
         (1, 1, 1)
     }
+}
+
+/// Prompt user to save changes
+/// Returns: 6 = IDYES, 7 = IDNO, 2 = IDCANCEL
+pub unsafe fn prompt_save_changes(hwnd: HWND) -> i32 {
+    let msg = "Do you want to save changes?";
+    let msg_wide: Vec<u16> = msg.encode_utf16().chain(std::iter::once(0)).collect();
+    let title_wide: Vec<u16> = "Notepad++".encode_utf16().chain(std::iter::once(0)).collect();
+
+    MessageBoxW(
+        hwnd,
+        PCWSTR(msg_wide.as_ptr()),
+        PCWSTR(title_wide.as_ptr()),
+        MB_YESNOCANCEL | MB_ICONQUESTION,
+    )
+    .0
 }

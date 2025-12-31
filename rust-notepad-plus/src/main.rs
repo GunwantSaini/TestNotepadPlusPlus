@@ -28,6 +28,10 @@ fn main() -> Result<()> {
     let app = NotepadApp::new()?;
     info!("Core application initialized");
 
+    // Initialize global UI state
+    notepad_ui::init_global_state();
+    info!("Global state initialized");
+
     // Create main window
     let main_window = MainWindow::new(&app)?;
     info!("Main window created");

@@ -219,17 +219,89 @@ unsafe extern "system" fn window_proc(
         }
         WM_COMMAND => {
             let command_id = (wparam.0 & 0xFFFF) as u32;
-            log::debug!("WM_COMMAND received: {}", command_id);
+            let notification_code = ((wparam.0 >> 16) & 0xFFFF) as u32;
+            log::debug!("WM_COMMAND received: {} (notification: {})", command_id, notification_code);
+
+            // EN_CHANGE notification from edit control (text changed)
+            const EN_CHANGE: u32 = 0x0300;
+            if notification_code == EN_CHANGE {
+                // Mark document as dirty
+                crate::global_state::with_state(|state| {
+                    state.set_dirty(true);
+                });
+
+                // Update window title to show dirty indicator
+                crate::global_state::read_state(|state| {
+                    crate::window_updates::update_window_title(hwnd, state);
+                });
+
+                // Update cursor position and status bar
+                let (line, col, total) = crate::window_updates::get_editor_cursor_position(hwnd);
+                crate::global_state::with_state(|state| {
+                    state.update_cursor_position(line, col, total);
+                });
+                crate::global_state::read_state(|state| {
+                    crate::window_updates::update_status_bar_position(hwnd, state);
+                });
+
+                return LRESULT(0);
+            }
+
+            // EN_SETSEL notification (selection/cursor changed)
+            const EN_SETSEL: u32 = 0x0702;
+            if notification_code == EN_SETSEL {
+                let (line, col, total) = crate::window_updates::get_editor_cursor_position(hwnd);
+                crate::global_state::with_state(|state| {
+                    state.update_cursor_position(line, col, total);
+                });
+                crate::global_state::read_state(|state| {
+                    crate::window_updates::update_status_bar_position(hwnd, state);
+                });
+                return LRESULT(0);
+            }
 
             if let Some(cmd) = menu::handle_menu_command(command_id) {
-                // Handle File Exit specially
+                // Handle File Exit specially - check for unsaved changes
                 if matches!(cmd, notepad_core::CommandId::FileExit) {
-                    PostQuitMessage(0);
+                    let is_dirty = crate::global_state::read_state(|s| s.is_dirty);
+                    if is_dirty {
+                        let result = crate::window_updates::prompt_save_changes(hwnd);
+                        if result == 6 { // IDYES
+                            if command_handler::handle_command(hwnd, notepad_core::CommandId::FileSave) {
+                                PostQuitMessage(0);
+                            }
+                        } else if result == 7 { // IDNO
+                            PostQuitMessage(0);
+                        }
+                        // IDCANCEL (2) - do nothing
+                    } else {
+                        PostQuitMessage(0);
+                    }
                     return LRESULT(0);
                 }
 
                 // Dispatch to command handler
                 command_handler::handle_command(hwnd, cmd);
+            }
+            LRESULT(0)
+        }
+        0x0010 => { // WM_CLOSE
+            let is_dirty = crate::global_state::read_state(|s| s.is_dirty);
+            if is_dirty {
+                let result = crate::window_updates::prompt_save_changes(hwnd);
+                if result == 6 { // IDYES
+                    if command_handler::handle_command(hwnd, notepad_core::CommandId::FileSave) {
+                        use windows::Win32::UI::WindowsAndMessaging::DestroyWindow;
+                        DestroyWindow(hwnd).ok();
+                    }
+                } else if result == 7 { // IDNO
+                    use windows::Win32::UI::WindowsAndMessaging::DestroyWindow;
+                    DestroyWindow(hwnd).ok();
+                }
+                // IDCANCEL (2) - do nothing, keep window open
+            } else {
+                use windows::Win32::UI::WindowsAndMessaging::DestroyWindow;
+                DestroyWindow(hwnd).ok();
             }
             LRESULT(0)
         }

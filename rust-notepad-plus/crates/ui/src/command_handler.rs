@@ -59,6 +59,23 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
 
         // File commands (basic implementations)
         CommandId::FileNew => {
+            // Check if current document has unsaved changes
+            let is_dirty = crate::global_state::read_state(|s| s.is_dirty);
+            if is_dirty {
+                let result = unsafe { crate::window_updates::prompt_save_changes(hwnd) };
+                if result == 6 {
+                    // IDYES - save first
+                    if !handle_command(hwnd, CommandId::FileSave) {
+                        return false; // Save was cancelled or failed
+                    }
+                } else if result == 2 {
+                    // IDCANCEL - don't create new file
+                    return false;
+                }
+                // IDNO (7) - proceed without saving
+            }
+
+            // Clear editor
             unsafe {
                 use windows::Win32::UI::WindowsAndMessaging::WM_SETTEXT;
                 let empty: Vec<u16> = vec![0];
@@ -69,11 +86,43 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
                     LPARAM(empty.as_ptr() as isize),
                 );
             }
+
+            // Reset state
+            crate::global_state::with_state(|state| {
+                state.set_current_file(None);
+                state.set_dirty(false);
+                state.update_cursor_position(1, 1, 1);
+            });
+
+            // Update window title and status bar
+            crate::global_state::read_state(|state| {
+                unsafe {
+                    crate::window_updates::update_window_title(hwnd, state);
+                    crate::window_updates::update_status_bar_position(hwnd, state);
+                }
+            });
+
             log::info!("New file created");
             true
         }
 
         CommandId::FileOpen => {
+            // Check if current document has unsaved changes
+            let is_dirty = crate::global_state::read_state(|s| s.is_dirty);
+            if is_dirty {
+                let result = unsafe { crate::window_updates::prompt_save_changes(hwnd) };
+                if result == 6 {
+                    // IDYES - save first
+                    if !handle_command(hwnd, CommandId::FileSave) {
+                        return false; // Save was cancelled or failed
+                    }
+                } else if result == 2 {
+                    // IDCANCEL - don't open file
+                    return false;
+                }
+                // IDNO (7) - proceed without saving
+            }
+
             log::info!("Opening File Open dialog");
             if let Some(file_path) = show_open_dialog(hwnd) {
                 log::info!("Opening file: {:?}", file_path);
@@ -90,6 +139,21 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
                                 LPARAM(text_wide.as_ptr() as isize),
                             );
                         }
+
+                        // Update state
+                        crate::global_state::with_state(|state| {
+                            state.set_current_file(Some(file_path.clone()));
+                            state.set_dirty(false);
+                        });
+
+                        // Update UI
+                        crate::global_state::read_state(|state| {
+                            unsafe {
+                                crate::window_updates::update_window_title(hwnd, state);
+                                crate::window_updates::update_status_bar_position(hwnd, state);
+                            }
+                        });
+
                         log::info!("File loaded successfully: {:?}", file_path);
                         true
                     }
@@ -110,7 +174,7 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
             if let Some(file_path) = show_save_dialog(hwnd, Some("untitled.txt")) {
                 log::info!("Saving file: {:?}", file_path);
                 // Get text from editor
-                unsafe {
+                let save_result = unsafe {
                     use windows::Win32::UI::WindowsAndMessaging::WM_GETTEXT;
                     let mut buffer = vec![0u16; 65536]; // 64KB buffer
                     let len = SendMessageW(
@@ -146,7 +210,24 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
                         log::warn!("No text to save");
                         false
                     }
+                };
+
+                if save_result {
+                    // Update state after successful save
+                    crate::global_state::with_state(|state| {
+                        state.set_current_file(Some(file_path.clone()));
+                        state.set_dirty(false);
+                    });
+
+                    // Update UI
+                    crate::global_state::read_state(|state| {
+                        unsafe {
+                            crate::window_updates::update_window_title(hwnd, state);
+                        }
+                    });
                 }
+
+                save_result
             } else {
                 log::info!("File Save dialog cancelled");
                 false
@@ -158,7 +239,7 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
             if let Some(file_path) = show_save_dialog(hwnd, None) {
                 log::info!("Saving file as: {:?}", file_path);
                 // Get text from editor
-                unsafe {
+                let save_result = unsafe {
                     use windows::Win32::UI::WindowsAndMessaging::WM_GETTEXT;
                     let mut buffer = vec![0u16; 65536]; // 64KB buffer
                     let len = SendMessageW(
@@ -194,7 +275,24 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
                         log::warn!("No text to save");
                         false
                     }
+                };
+
+                if save_result {
+                    // Update state after successful save
+                    crate::global_state::with_state(|state| {
+                        state.set_current_file(Some(file_path.clone()));
+                        state.set_dirty(false);
+                    });
+
+                    // Update UI
+                    crate::global_state::read_state(|state| {
+                        unsafe {
+                            crate::window_updates::update_window_title(hwnd, state);
+                        }
+                    });
                 }
+
+                save_result
             } else {
                 log::info!("Save As dialog cancelled");
                 false
