@@ -217,13 +217,21 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
         }
 
         CommandId::SearchReplace => {
-            show_message(hwnd, "Replace", "Replace dialog not yet implemented");
-            false
+            log::info!("Opening Replace dialog");
+            let dialog_hwnd = unsafe { crate::replace_dialog::create_replace_dialog(hwnd) };
+            if dialog_hwnd.0 != 0 {
+                log::info!("Replace dialog created");
+            }
+            true
         }
 
         CommandId::SearchGoToLine => {
-            show_message(hwnd, "Go To Line", "Go To Line dialog not yet implemented");
-            false
+            log::info!("Opening Go To Line dialog");
+            let dialog_hwnd = unsafe { crate::goto_dialog::create_goto_dialog(hwnd) };
+            if dialog_hwnd.0 != 0 {
+                log::info!("Go To Line dialog created");
+            }
+            true
         }
 
         // View commands

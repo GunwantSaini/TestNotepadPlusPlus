@@ -7,11 +7,15 @@ pub mod statusbar;
 pub mod editor_control;
 pub mod command_handler;
 pub mod find_dialog;
+pub mod replace_dialog;
+pub mod goto_dialog;
 pub mod accelerators;
 pub mod file_dialogs;
+pub mod app_state;
 
 pub use main_window::MainWindow;
 pub use accelerators::create_accelerators;
+pub use app_state::{AppState, SharedAppState, create_shared_state};
 
 use thiserror::Error;
 

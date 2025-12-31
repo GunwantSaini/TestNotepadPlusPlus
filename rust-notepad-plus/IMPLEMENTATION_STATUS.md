@@ -32,7 +32,9 @@ When built and run on Windows, the application provides:
 - Clickable toolbar with 12 buttons
 - 5-part status bar showing file information
 - About dialog (Help > About)
-- Find dialog (basic UI implemented)
+- Find dialog with search integration and wrap-around
+- Replace dialog with Replace/Replace All
+- Go To Line dialog with validation
 - File Open dialog with multi-format support
 - File Save/Save As dialogs with overwrite protection
 
@@ -159,6 +161,31 @@ $ cargo check --workspace
 
 **Files**: `crates/ui/src/find_dialog.rs` (301 lines)
 
+#### Replace Dialog
+- Find and Replace dialog with 2 edit controls
+- Replace single occurrence
+- Replace All functionality
+- Case-sensitive option
+- Integrated with SearchEngine
+
+**Files**: `crates/ui/src/replace_dialog.rs` (433 lines)
+
+#### Go To Line Dialog
+- Simple dialog for line navigation
+- Number-only input validation
+- Line range validation
+- Automatic cursor positioning
+
+**Files**: `crates/ui/src/goto_dialog.rs` (222 lines)
+
+#### Application State Management
+- Track current filename
+- Dirty flag for unsaved changes
+- Cursor position tracking (line, column)
+- Window title generation
+
+**Files**: `crates/ui/src/app_state.rs` (75 lines)
+
 ### 🚧 PARTIAL (40-80%)
 
 #### Syntax Highlighting
@@ -170,12 +197,15 @@ $ cargo check --workspace
 
 ### ⏳ PLANNED
 
-- [ ] Replace dialog
-- [ ] Go To Line dialog
+- [ ] Status bar real-time cursor position updates
+- [ ] Window title updates with filename
+- [ ] Unsaved changes prompts (on exit/new/open)
+- [ ] Recent files list
 - [ ] Multi-document tabs (MDI)
 - [ ] Settings/Preferences
 - [ ] Printing
 - [ ] Session management
+- [ ] Encoding selection in dialogs
 
 ---
 
