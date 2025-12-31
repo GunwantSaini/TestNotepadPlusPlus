@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "crates/core",
-    "crates/ui",
     "crates/ui-core",
+    "crates/ui-windows",
     "crates/editor",
     "crates/lexer",
     "crates/plugins",
@@ -42,7 +42,7 @@ path = "src/main.rs"
 [dependencies]
 # Local crates
 notepad-core = { path = "crates/core" }
-notepad-ui = { path = "crates/ui" }
+notepad-ui-core = { path = "crates/ui-core" }
 notepad-editor = { path = "crates/editor" }
 notepad-lexer = { path = "crates/lexer" }
 notepad-plugins = { path = "crates/plugins" }
@@ -50,13 +50,15 @@ notepad-config = { path = "crates/config" }
 notepad-io = { path = "crates/io" }
 notepad-search = { path = "crates/search" }
 
-# Windows API
-windows = { workspace = true }
-
 # Error handling
 anyhow = "1.0"
 log = "0.4"
 env_logger = "0.11"
+
+# Platform-specific UI backend
+[target.'cfg(windows)'.dependencies]
+notepad-ui-windows = { path = "crates/ui-windows" }
+windows = { workspace = true }
 
 [build-dependencies]
 winres = "0.1"

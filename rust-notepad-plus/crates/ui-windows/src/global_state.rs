@@ -1,6 +1,6 @@
 //! Global application state singleton
 
-use crate::app_state::AppState;
+use notepad_ui_core::app_state::AppState;
 use std::sync::{Mutex, OnceLock};
 
 /// Global application state

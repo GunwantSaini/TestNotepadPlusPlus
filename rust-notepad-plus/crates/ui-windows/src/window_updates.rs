@@ -1,6 +1,6 @@
 //! Window title and status bar update helpers
 
-use crate::app_state::AppState;
+use notepad_ui_core::app_state::AppState;
 use windows::core::PCWSTR;
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{

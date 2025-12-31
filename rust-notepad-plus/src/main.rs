@@ -1,24 +1,41 @@
 //! Notepad++ Rust Edition
 //!
-//! A complete port of Notepad++ from C++ to Rust for Windows.
+//! A cross-platform port of Notepad++ from C++ to Rust.
 //! This maintains feature parity with the original while leveraging
 //! Rust's memory safety and modern tooling.
 
+// Platform-specific UI backend
+#[cfg(target_os = "windows")]
+use notepad_ui_windows as ui_backend;
+
+#[cfg(target_os = "windows")]
 use anyhow::Result;
+
+#[cfg(target_os = "windows")]
 use log::info;
+
+#[cfg(target_os = "windows")]
 use notepad_core::NotepadApp;
-use notepad_ui::{create_accelerators, MainWindow};
+
+#[cfg(target_os = "windows")]
+use ui_backend::{create_accelerators, MainWindow};
+
+#[cfg(target_os = "windows")]
 use windows::Win32::UI::WindowsAndMessaging::{
     DispatchMessageW, GetMessageW, TranslateAcceleratorW, TranslateMessage, MSG,
 };
 
+#[cfg(not(target_os = "windows"))]
+use anyhow::Result;
+
+#[cfg(target_os = "windows")]
 fn main() -> Result<()> {
     // Initialize logging
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Info)
         .init();
 
-    info!("Notepad++ Rust Edition starting...");
+    info!("Notepad++ Rust Edition starting (Windows)...");
 
     // Parse command line arguments
     let args: Vec<String> = std::env::args().collect();
@@ -29,7 +46,7 @@ fn main() -> Result<()> {
     info!("Core application initialized");
 
     // Initialize global UI state
-    notepad_ui::init_global_state();
+    ui_backend::init_global_state();
     info!("Global state initialized");
 
     // Create main window
@@ -70,6 +87,17 @@ fn main() -> Result<()> {
 
     info!("Application shutting down");
     Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
+fn main() -> Result<()> {
+    eprintln!("Error: This platform is not yet supported.");
+    eprintln!("Currently supported platforms:");
+    eprintln!("  - Windows (Win32 API backend)");
+    eprintln!("\nPlanned platforms:");
+    eprintln!("  - Linux (GTK4 backend) - In development");
+    eprintln!("  - macOS (Cocoa backend) - Future");
+    std::process::exit(1);
 }
 
 #[cfg(test)]

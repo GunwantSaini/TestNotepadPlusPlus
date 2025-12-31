@@ -1,15 +1,17 @@
 [package]
-name = "notepad-ui"
+name = "notepad-ui-windows"
 version = "8.0.0"
 edition = "2021"
+description = "Windows UI backend (Win32 API) for Notepad++ Rust Edition"
 
 [dependencies]
 # Local crates
 notepad-core = { path = "../core" }
+notepad-ui-core = { path = "../ui-core" }
 notepad-editor = { path = "../editor" }
 notepad-search = { path = "../search" }
 
-# Windows API
+# Windows API (Windows-only)
 windows = { workspace = true }
 
 # Utilities
