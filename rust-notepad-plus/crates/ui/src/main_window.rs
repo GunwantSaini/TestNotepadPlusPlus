@@ -1,6 +1,6 @@
 //! Main application window with full Win32 implementation
 
-use crate::{menu, statusbar::StatusBar, toolbar::Toolbar, Result};
+use crate::{editor_control::EditorControl, menu, statusbar::StatusBar, toolbar::Toolbar, Result};
 use notepad_core::NotepadApp;
 use notepad_editor::EditorView;
 use std::sync::{Arc, Mutex};
@@ -141,6 +141,16 @@ unsafe extern "system" fn window_proc(
                 Err(e) => log::error!("Failed to create status bar: {:?}", e),
             }
 
+            // Create editor control
+            // Initial size will be set in WM_SIZE
+            match EditorControl::new(hwnd, 0, 32, 800, 600) {
+                Ok(_editor) => {
+                    log::info!("Editor control created successfully");
+                    // Editor is created and displayed
+                }
+                Err(e) => log::error!("Failed to create editor: {:?}", e),
+            }
+
             LRESULT(0)
         }
         WM_DESTROY => {
@@ -164,16 +174,44 @@ unsafe extern "system" fn window_proc(
             let mut rect = windows::Win32::Foundation::RECT::default();
             if GetClientRect(hwnd, &mut rect).is_ok() {
                 let width = rect.right - rect.left;
+                let height = rect.bottom - rect.top;
 
-                // Resize toolbar and status bar
-                // Note: We can't access the toolbar/statusbar handles here easily
-                // Windows will handle toolbar/statusbar resizing automatically via WM_SIZE
-                // Just need to recalculate editor area
+                // Toolbar and status bar resize themselves automatically
+                // We need to resize the editor control to fill the space between them
 
-                log::debug!("Client area resized to width: {}", width);
+                const TOOLBAR_HEIGHT: i32 = 32;
+                const STATUSBAR_HEIGHT: i32 = 24;
+
+                let editor_y = TOOLBAR_HEIGHT;
+                let editor_height = height - TOOLBAR_HEIGHT - STATUSBAR_HEIGHT;
+
+                // Find and resize editor control
+                // The editor is a child EDIT window
+                use windows::Win32::UI::WindowsAndMessaging::FindWindowExW;
+                let editor_hwnd = FindWindowExW(hwnd, None, w!("EDIT"), PCWSTR::null());
+
+                if editor_hwnd.0 != 0 {
+                    windows::Win32::UI::WindowsAndMessaging::SetWindowPos(
+                        editor_hwnd,
+                        None,
+                        0,
+                        editor_y,
+                        width,
+                        editor_height.max(0),
+                        windows::Win32::UI::WindowsAndMessaging::SWP_NOZORDER,
+                    )
+                    .ok();
+                }
+
+                log::debug!(
+                    "Resized editor to {}x{} at y={}",
+                    width,
+                    editor_height,
+                    editor_y
+                );
             }
 
-            // Let DefWindowProc handle default sizing
+            // Let DefWindowProc handle default sizing for toolbar/statusbar
             DefWindowProcW(hwnd, msg, wparam, lparam)
         }
         WM_COMMAND => {
