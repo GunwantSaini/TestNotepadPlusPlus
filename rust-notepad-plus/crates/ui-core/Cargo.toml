@@ -1,0 +1,19 @@
+[package]
+name = "notepad-ui-core"
+version = "8.0.0"
+edition = "2021"
+authors = ["Notepad++ Rust Team"]
+description = "Platform-independent UI abstractions for Notepad++ Rust Edition"
+license = "GPL-3.0"
+
+[dependencies]
+notepad-core = { path = "../core" }
+notepad-editor = { path = "../editor" }
+notepad-search = { path = "../search" }
+
+# For encoding and file operations
+thiserror = "1.0"
+log = "0.4"
+
+[features]
+default = []
