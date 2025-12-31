@@ -12,10 +12,13 @@ pub mod goto_dialog;
 pub mod accelerators;
 pub mod file_dialogs;
 pub mod app_state;
+pub mod window_updates;
+pub mod global_state;
 
 pub use main_window::MainWindow;
 pub use accelerators::create_accelerators;
 pub use app_state::{AppState, SharedAppState, create_shared_state};
+pub use global_state::{init_global_state, get_global_state, with_state, read_state};
 
 use thiserror::Error;
 
