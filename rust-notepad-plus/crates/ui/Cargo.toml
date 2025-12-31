@@ -7,6 +7,7 @@ edition = "2021"
 # Local crates
 notepad-core = { path = "../core" }
 notepad-editor = { path = "../editor" }
+notepad-search = { path = "../search" }
 
 # Windows API
 windows = { workspace = true }

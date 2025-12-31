@@ -7,8 +7,11 @@ pub mod statusbar;
 pub mod editor_control;
 pub mod command_handler;
 pub mod find_dialog;
+pub mod accelerators;
+pub mod file_dialogs;
 
 pub use main_window::MainWindow;
+pub use accelerators::create_accelerators;
 
 use thiserror::Error;
 

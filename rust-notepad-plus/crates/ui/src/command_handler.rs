@@ -1,12 +1,14 @@
 //! Command handler for menu and toolbar actions
 
+use crate::file_dialogs::{show_open_dialog, show_save_dialog};
 use notepad_core::CommandId;
+use std::fs;
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::Controls::{EM_CANUNDO, EM_UNDO};
 use windows::Win32::UI::WindowsAndMessaging::{
-    FindWindowExW, MessageBoxW, SendMessageW, MB_ICONINFORMATION, MB_OK, WM_COPY, WM_CUT,
-    WM_PASTE,
+    FindWindowExW, MessageBoxW, SendMessageW, MB_ICONERROR, MB_ICONINFORMATION, MB_OK, WM_COPY,
+    WM_CUT, WM_PASTE, WM_SETTEXT,
 };
 
 /// Handle a command by dispatching to the appropriate handler
@@ -72,21 +74,131 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
         }
 
         CommandId::FileOpen => {
-            log::info!("File Open dialog would appear here");
-            show_message(hwnd, "File Open", "File Open dialog not yet implemented");
-            false
+            log::info!("Opening File Open dialog");
+            if let Some(file_path) = show_open_dialog(hwnd) {
+                log::info!("Opening file: {:?}", file_path);
+                match fs::read_to_string(&file_path) {
+                    Ok(contents) => {
+                        // Load the file contents into the editor
+                        unsafe {
+                            let text_wide: Vec<u16> =
+                                contents.encode_utf16().chain(std::iter::once(0)).collect();
+                            SendMessageW(
+                                editor_hwnd,
+                                WM_SETTEXT,
+                                WPARAM(0),
+                                LPARAM(text_wide.as_ptr() as isize),
+                            );
+                        }
+                        log::info!("File loaded successfully: {:?}", file_path);
+                        true
+                    }
+                    Err(e) => {
+                        log::error!("Failed to read file: {}", e);
+                        show_error(hwnd, "File Open Error", &format!("Failed to open file: {}", e));
+                        false
+                    }
+                }
+            } else {
+                log::info!("File Open dialog cancelled");
+                false
+            }
         }
 
         CommandId::FileSave => {
-            log::info!("File Save dialog would appear here");
-            show_message(hwnd, "File Save", "File Save dialog not yet implemented");
-            false
+            log::info!("Opening File Save dialog");
+            if let Some(file_path) = show_save_dialog(hwnd, Some("untitled.txt")) {
+                log::info!("Saving file: {:?}", file_path);
+                // Get text from editor
+                unsafe {
+                    use windows::Win32::UI::WindowsAndMessaging::WM_GETTEXT;
+                    let mut buffer = vec![0u16; 65536]; // 64KB buffer
+                    let len = SendMessageW(
+                        editor_hwnd,
+                        WM_GETTEXT,
+                        WPARAM(buffer.len()),
+                        LPARAM(buffer.as_mut_ptr() as isize),
+                    );
+
+                    if len.0 > 0 {
+                        let text = String::from_utf16_lossy(&buffer[..len.0 as usize]);
+                        match fs::write(&file_path, text.as_bytes()) {
+                            Ok(_) => {
+                                log::info!("File saved successfully: {:?}", file_path);
+                                show_message(
+                                    hwnd,
+                                    "File Saved",
+                                    &format!("File saved: {}", file_path.display()),
+                                );
+                                true
+                            }
+                            Err(e) => {
+                                log::error!("Failed to write file: {}", e);
+                                show_error(
+                                    hwnd,
+                                    "File Save Error",
+                                    &format!("Failed to save file: {}", e),
+                                );
+                                false
+                            }
+                        }
+                    } else {
+                        log::warn!("No text to save");
+                        false
+                    }
+                }
+            } else {
+                log::info!("File Save dialog cancelled");
+                false
+            }
         }
 
         CommandId::FileSaveAs => {
-            log::info!("File Save As dialog would appear here");
-            show_message(hwnd, "Save As", "Save As dialog not yet implemented");
-            false
+            log::info!("Opening Save As dialog");
+            if let Some(file_path) = show_save_dialog(hwnd, None) {
+                log::info!("Saving file as: {:?}", file_path);
+                // Get text from editor
+                unsafe {
+                    use windows::Win32::UI::WindowsAndMessaging::WM_GETTEXT;
+                    let mut buffer = vec![0u16; 65536]; // 64KB buffer
+                    let len = SendMessageW(
+                        editor_hwnd,
+                        WM_GETTEXT,
+                        WPARAM(buffer.len()),
+                        LPARAM(buffer.as_mut_ptr() as isize),
+                    );
+
+                    if len.0 > 0 {
+                        let text = String::from_utf16_lossy(&buffer[..len.0 as usize]);
+                        match fs::write(&file_path, text.as_bytes()) {
+                            Ok(_) => {
+                                log::info!("File saved successfully: {:?}", file_path);
+                                show_message(
+                                    hwnd,
+                                    "File Saved",
+                                    &format!("File saved: {}", file_path.display()),
+                                );
+                                true
+                            }
+                            Err(e) => {
+                                log::error!("Failed to write file: {}", e);
+                                show_error(
+                                    hwnd,
+                                    "File Save Error",
+                                    &format!("Failed to save file: {}", e),
+                                );
+                                false
+                            }
+                        }
+                    } else {
+                        log::warn!("No text to save");
+                        false
+                    }
+                }
+            } else {
+                log::info!("Save As dialog cancelled");
+                false
+            }
         }
 
         CommandId::FilePrint => {
@@ -148,6 +260,21 @@ fn show_message(hwnd: HWND, title: &str, message: &str) {
             PCWSTR(message_wide.as_ptr()),
             PCWSTR(title_wide.as_ptr()),
             MB_OK | MB_ICONINFORMATION,
+        );
+    }
+}
+
+/// Show an error message box
+fn show_error(hwnd: HWND, title: &str, message: &str) {
+    unsafe {
+        let title_wide: Vec<u16> = title.encode_utf16().chain(std::iter::once(0)).collect();
+        let message_wide: Vec<u16> = message.encode_utf16().chain(std::iter::once(0)).collect();
+
+        MessageBoxW(
+            hwnd,
+            PCWSTR(message_wide.as_ptr()),
+            PCWSTR(title_wide.as_ptr()),
+            MB_OK | MB_ICONERROR,
         );
     }
 }

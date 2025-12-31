@@ -24,6 +24,7 @@ When built and run on Windows, the application provides:
 - Undo (Ctrl+Z)
 - Select All (Ctrl+A)
 - Scrolling (vertical and horizontal)
+- Full keyboard accelerator support (15 shortcuts)
 
 ### ✅ UI Features
 - Resizable window (1024x768 default)
@@ -32,10 +33,15 @@ When built and run on Windows, the application provides:
 - 5-part status bar showing file information
 - About dialog (Help > About)
 - Find dialog (basic UI implemented)
+- File Open dialog with multi-format support
+- File Save/Save As dialogs with overwrite protection
 
 ### ✅ File Operations
 - New file (File > New clears editor)
-- Placeholders for Open/Save (show informational dialogs)
+- Open file (File > Open with native Windows dialog)
+- Save file (File > Save with native Windows dialog)
+- Save As (File > Save As with native Windows dialog)
+- Support for text files (*.txt, *.log, *.md, *.rs, *.cpp, *.h, *.c, *.js, *.py, *.java)
 
 ---
 
@@ -129,15 +135,31 @@ $ cargo check --workspace
 
 **Files**: `crates/io/src/file.rs`, `crates/core/src/buffer.rs`
 
-### 🚧 PARTIAL (40-80%)
+#### Keyboard Accelerators
+- 15 keyboard shortcuts (Ctrl+N, Ctrl+O, Ctrl+S, etc.)
+- Integrated into message loop
+- Standard Windows accelerator table
+
+**Files**: `crates/ui/src/accelerators.rs` (112 lines)
+
+#### File Dialogs
+- Open dialog with GetOpenFileNameW
+- Save/Save As dialogs with GetSaveFileNameW
+- Multi-format file filters
+- Overwrite protection
+
+**Files**: `crates/ui/src/file_dialogs.rs` (143 lines)
 
 #### Find Dialog
-**Status**: 80% Complete
-- ✅ Dialog window and controls
-- ✅ UI layout
-- ⏳ Search integration pending
+- Dialog window with search controls
+- Case-sensitive search option
+- Full integration with SearchEngine
+- Wrap-around search
+- Text selection on match
 
-**Files**: `crates/ui/src/find_dialog.rs` (212 lines)
+**Files**: `crates/ui/src/find_dialog.rs` (301 lines)
+
+### 🚧 PARTIAL (40-80%)
 
 #### Syntax Highlighting
 **Status**: 60% Complete
@@ -148,8 +170,8 @@ $ cargo check --workspace
 
 ### ⏳ PLANNED
 
-- [ ] File Open/Save dialogs
-- [ ] Keyboard accelerators
+- [ ] Replace dialog
+- [ ] Go To Line dialog
 - [ ] Multi-document tabs (MDI)
 - [ ] Settings/Preferences
 - [ ] Printing
@@ -180,10 +202,10 @@ $ cargo check --workspace
 - [x] Text editing
 - [x] Command handling
 
-### Phase 2: Essential Features 🚧 IN PROGRESS
+### Phase 2: Essential Features ✅ COMPLETE
 - [x] Find dialog UI
-- [ ] File dialogs
-- [ ] Keyboard accelerators
+- [x] File dialogs (Open, Save, Save As)
+- [x] Keyboard accelerators (15 shortcuts)
 
 ### Phase 3: Advanced Features ⏳ PLANNED  
 - [ ] Scintilla with SciLexer.DLL

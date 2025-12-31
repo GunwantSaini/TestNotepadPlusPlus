@@ -7,8 +7,10 @@
 use anyhow::Result;
 use log::info;
 use notepad_core::NotepadApp;
-use notepad_ui::MainWindow;
-use windows::Win32::UI::WindowsAndMessaging::{DispatchMessageW, GetMessageW, TranslateMessage, MSG};
+use notepad_ui::{create_accelerators, MainWindow};
+use windows::Win32::UI::WindowsAndMessaging::{
+    DispatchMessageW, GetMessageW, TranslateAcceleratorW, TranslateMessage, MSG,
+};
 
 fn main() -> Result<()> {
     // Initialize logging
@@ -34,14 +36,31 @@ fn main() -> Result<()> {
     main_window.show();
     info!("Main window shown");
 
-    // Windows message loop
+    // Create accelerator table for keyboard shortcuts
+    let haccel = match create_accelerators() {
+        Ok(accel) => {
+            info!("Accelerator table created (Ctrl+N, Ctrl+O, Ctrl+S, etc.)");
+            accel
+        }
+        Err(e) => {
+            log::warn!("Failed to create accelerator table: {:?}", e);
+            windows::Win32::UI::WindowsAndMessaging::HACCEL::default()
+        }
+    };
+
+    // Windows message loop with accelerator support
     info!("Entering message loop...");
     let mut msg = MSG::default();
+    let hwnd = main_window.hwnd();
 
     unsafe {
         while GetMessageW(&mut msg, None, 0, 0).as_bool() {
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
+            // Try to translate accelerator first
+            if haccel.is_invalid() || TranslateAcceleratorW(hwnd, haccel, &msg) == 0 {
+                // If not an accelerator, do normal translation
+                TranslateMessage(&msg);
+                DispatchMessageW(&msg);
+            }
         }
     }
 
