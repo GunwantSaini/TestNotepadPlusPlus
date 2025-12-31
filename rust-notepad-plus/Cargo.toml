@@ -1,0 +1,62 @@
+[workspace]
+members = [
+    "crates/core",
+    "crates/ui",
+    "crates/editor",
+    "crates/lexer",
+    "crates/plugins",
+    "crates/config",
+    "crates/io",
+    "crates/search",
+]
+resolver = "2"
+
+[package]
+name = "notepad-plus-rust"
+version = "8.0.0"
+edition = "2021"
+authors = ["Notepad++ Rust Team"]
+description = "Notepad++ text editor ported to Rust"
+license = "GPL-3.0"
+
+[[bin]]
+name = "notepad-plus"
+path = "src/main.rs"
+
+[dependencies]
+# Local crates
+notepad-core = { path = "crates/core" }
+notepad-ui = { path = "crates/ui" }
+notepad-editor = { path = "crates/editor" }
+notepad-lexer = { path = "crates/lexer" }
+notepad-plugins = { path = "crates/plugins" }
+notepad-config = { path = "crates/config" }
+notepad-io = { path = "crates/io" }
+notepad-search = { path = "crates/search" }
+
+# Windows API
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Controls",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Threading",
+] }
+
+# Error handling
+anyhow = "1.0"
+log = "0.4"
+env_logger = "0.11"
+
+[build-dependencies]
+winres = "0.1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true

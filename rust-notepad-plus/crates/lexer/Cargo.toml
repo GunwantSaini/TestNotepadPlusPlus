@@ -1,0 +1,13 @@
+[package]
+name = "notepad-lexer"
+version = "8.0.0"
+edition = "2021"
+
+[dependencies]
+# Syntax highlighting
+tree-sitter = "0.20"
+syntect = "5.1"
+
+# Utilities
+anyhow = "1.0"
+log = "0.4"

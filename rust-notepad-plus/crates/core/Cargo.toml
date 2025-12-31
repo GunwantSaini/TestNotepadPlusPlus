@@ -1,0 +1,26 @@
+[package]
+name = "notepad-core"
+version = "8.0.0"
+edition = "2021"
+authors = ["Notepad++ Rust Team"]
+description = "Core application logic for Notepad++ Rust"
+
+[dependencies]
+# Local crates
+notepad-io = { path = "../io" }
+notepad-config = { path = "../config" }
+notepad-editor = { path = "../editor" }
+
+# Windows API
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_System_Threading",
+] }
+
+# Utilities
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"
+parking_lot = "0.12"
+
+[dev-dependencies]

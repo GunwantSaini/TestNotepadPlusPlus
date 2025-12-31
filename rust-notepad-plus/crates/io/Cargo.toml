@@ -1,0 +1,17 @@
+[package]
+name = "notepad-io"
+version = "8.0.0"
+edition = "2021"
+
+[dependencies]
+# File watching
+notify = "6.1"
+
+# Encoding detection
+encoding_rs = "0.8"
+chardetng = "0.1"
+
+# Utilities
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"
