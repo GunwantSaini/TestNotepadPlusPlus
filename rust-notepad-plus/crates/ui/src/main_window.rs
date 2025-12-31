@@ -1,6 +1,9 @@
 //! Main application window with full Win32 implementation
 
-use crate::{editor_control::EditorControl, menu, statusbar::StatusBar, toolbar::Toolbar, Result};
+use crate::{
+    command_handler, editor_control::EditorControl, menu, statusbar::StatusBar, toolbar::Toolbar,
+    Result,
+};
 use notepad_core::NotepadApp;
 use notepad_editor::EditorView;
 use std::sync::{Arc, Mutex};
@@ -219,17 +222,14 @@ unsafe extern "system" fn window_proc(
             log::debug!("WM_COMMAND received: {}", command_id);
 
             if let Some(cmd) = menu::handle_menu_command(command_id) {
-                log::info!("Menu command: {:?}", cmd);
-
-                // Handle specific commands
-                match cmd {
-                    notepad_core::CommandId::FileExit => {
-                        PostQuitMessage(0);
-                    }
-                    _ => {
-                        log::info!("Command not yet implemented: {:?}", cmd);
-                    }
+                // Handle File Exit specially
+                if matches!(cmd, notepad_core::CommandId::FileExit) {
+                    PostQuitMessage(0);
+                    return LRESULT(0);
                 }
+
+                // Dispatch to command handler
+                command_handler::handle_command(hwnd, cmd);
             }
             LRESULT(0)
         }

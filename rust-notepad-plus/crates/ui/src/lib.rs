@@ -5,6 +5,8 @@ pub mod menu;
 pub mod toolbar;
 pub mod statusbar;
 pub mod editor_control;
+pub mod command_handler;
+pub mod find_dialog;
 
 pub use main_window::MainWindow;
 
