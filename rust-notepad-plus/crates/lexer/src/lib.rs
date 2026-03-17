@@ -1,10 +1,14 @@
 //! Syntax highlighting and lexer management
 
 pub mod language;
+pub mod languages;
 pub mod registry;
+pub mod tokenizer;
 
 pub use language::Language;
+pub use languages::*;
 pub use registry::LanguageRegistry;
+pub use tokenizer::{PlainTextTokenizer, RegexTokenizer, Token, TokenType, Tokenizer};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LanguageType {
