@@ -1,10 +1,14 @@
 //! Plugin system for loading and managing plugins
 
+pub mod api;
+pub mod examples;
 pub mod interface;
 pub mod loader;
 pub mod manager;
 
-pub use interface::PluginInfo;
+pub use api::{Plugin, PluginContext, PluginEvent, PluginInfo, PluginResult};
+pub use examples::*;
+pub use interface::*;
 pub use loader::PluginLoader;
 pub use manager::PluginManager;
 
