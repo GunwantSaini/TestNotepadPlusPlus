@@ -7,7 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Added - Phase 3: Production Polish (2025-01-XX)
+- **CLI argument handling**: Open files from command line
+- **LICENSE file**: GPL-3.0 license with reference
+- **Code quality configuration**:
+  - rustfmt.toml for consistent formatting
+  - .clippy.toml for linting rules
+  - Workspace-wide clippy lints (pedantic, nursery)
+- **Comprehensive documentation** (RECOMMENDATIONS.md, MIGRATION_GUIDE.md)
+- **Gap analysis**: 65 identified improvements for production readiness
+
+### Added - Phase 2: GUI Implementation (2024-12-XX)
+- **Win32 GUI** with full window management
+  - Main window with menu bar
+  - Toolbar with common actions
+  - Status bar with encoding/line ending indicators
+  - Edit control integration
+- **File dialogs**: Open, Save, Save As (native Windows dialogs)
+- **Search dialogs**: Find, Replace, Go To Line
+- **Keyboard accelerators**: Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+F, Ctrl+H, Ctrl+G
+- **Recent Files (MRU)**: Track up to 10 most recently used files
+- **Word Wrap**: Toggle word wrap on/off
+- **Encoding detection and conversion**:
+  - Auto-detect UTF-8, UTF-8 BOM, UTF-16 LE/BE, ANSI
+  - BOM (Byte Order Mark) detection
+  - Line ending detection (CRLF, LF, CR)
+  - Encoding conversion for save operations
+- **Application state management**:
+  - Global state singleton
+  - Dirty flag tracking
+  - Cursor position tracking
+  - Window title updates
+
+### Added - Phase 1: Core Functionality (2024-11-XX)
 - Complete search and replace functionality with regex support
   - Case-sensitive and case-insensitive search
   - Literal and regex pattern matching
