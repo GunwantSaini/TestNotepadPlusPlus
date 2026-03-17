@@ -1,0 +1,32 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=Notepad++ Rust Edition
+GenericName=Text Editor
+Comment=Advanced text and source code editor written in Rust
+Keywords=text;editor;code;development;programming;
+
+# Executable and icon
+Exec=/usr/local/bin/notepad-plus %F
+Icon=notepad-plus-rust
+Terminal=false
+
+# Categories for application menu
+Categories=Utility;TextEditor;Development;IDE;GTK;
+
+# MIME types - file associations
+MimeType=text/plain;text/x-c;text/x-c++;text/x-java;text/x-python;text/x-rust;text/x-go;text/x-javascript;text/x-typescript;text/html;text/css;text/xml;application/json;application/x-yaml;application/toml;text/markdown;text/x-markdown;
+
+# Actions (right-click menu options)
+Actions=NewWindow;
+
+[Desktop Action NewWindow]
+Name=Open a New Window
+Exec=/usr/local/bin/notepad-plus --new-window
+Icon=notepad-plus-rust
+
+# Additional metadata
+StartupNotify=true
+StartupWMClass=notepad-plus-rust
+SingleMainWindow=false
+X-GNOME-UsesNotifications=true

@@ -1,0 +1,24 @@
+# Windows installer output
+*.exe
+*.msi
+
+# macOS installer output
+*.dmg
+*.pkg
+
+# Linux package outputs
+*.deb
+*.rpm
+*.tar.gz
+*.tar.xz
+*.AppImage
+
+# Build directories
+build/
+dist/
+pkg/
+src/
+
+# Temporary files
+*.log
+*.tmp

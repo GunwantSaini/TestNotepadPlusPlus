@@ -65,6 +65,13 @@ env_logger = "0.11"
 [build-dependencies]
 winres = "0.1"
 
+[package.metadata.winresource]
+OriginalFilename = "notepad-plus.exe"
+ProductName = "Notepad++ Rust Edition"
+FileDescription = "Advanced Text and Source Code Editor"
+CompanyName = "Notepad++ Rust Contributors"
+LegalCopyright = "GPL-3.0"
+
 [profile.release]
 opt-level = 3
 lto = true

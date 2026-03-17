@@ -1,0 +1,83 @@
+# Maintainer: Notepad++ Rust Team <notepad-rust@example.com>
+
+pkgname=notepad-plus-rust
+pkgver=8.0.0
+pkgrel=1
+pkgdesc="Advanced text and source code editor written in Rust"
+arch=('x86_64')
+url="https://github.com/yourusername/notepad-plus-rust"
+license=('GPL3')
+depends=('gcc-libs')
+makedepends=('rust' 'cargo')
+optdepends=(
+    'gtk4: for native GTK4 UI (future feature)'
+    'python: for plugin support'
+)
+provides=('notepad-plus-rust')
+conflicts=('notepad-plus-rust-git')
+source=(
+    "$pkgname-$pkgver.tar.gz::https://github.com/yourusername/$pkgname/archive/v$pkgver.tar.gz"
+    "notepad-plus-rust.desktop"
+)
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+    cd "$srcdir/$pkgname-$pkgver"
+
+    # Verify Cargo.lock exists
+    cargo fetch --locked --target "$CARCH-unknown-linux-gnu"
+}
+
+build() {
+    cd "$srcdir/$pkgname-$pkgver"
+
+    # Build with release optimizations
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+
+    cargo build --frozen --release --all-features
+}
+
+check() {
+    cd "$srcdir/$pkgname-$pkgver"
+
+    # Run test suite
+    cargo test --frozen --release
+}
+
+package() {
+    cd "$srcdir/$pkgname-$pkgver"
+
+    # Install binary
+    install -Dm755 "target/release/notepad-plus" \
+        "$pkgdir/usr/bin/notepad-plus"
+
+    # Install desktop file
+    install -Dm644 "$srcdir/notepad-plus-rust.desktop" \
+        "$pkgdir/usr/share/applications/notepad-plus-rust.desktop"
+
+    # Install icons (if available)
+    if [ -f "assets/icon.svg" ]; then
+        install -Dm644 "assets/icon.svg" \
+            "$pkgdir/usr/share/icons/hicolor/scalable/apps/notepad-plus-rust.svg"
+    fi
+
+    for size in 16 32 48 64 128 256; do
+        if [ -f "assets/icon-${size}.png" ]; then
+            install -Dm644 "assets/icon-${size}.png" \
+                "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/notepad-plus-rust.png"
+        fi
+    done
+
+    # Install documentation
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 CHANGELOG.md "$pkgdir/usr/share/doc/$pkgname/CHANGELOG.md"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+    # Install man page (if available)
+    if [ -f "docs/notepad-plus.1" ]; then
+        install -Dm644 "docs/notepad-plus.1" \
+            "$pkgdir/usr/share/man/man1/notepad-plus.1"
+        gzip "$pkgdir/usr/share/man/man1/notepad-plus.1"
+    fi
+}
