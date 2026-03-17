@@ -40,6 +40,21 @@ fn main() -> Result<()> {
     main_window.show();
     info!("Main window shown");
 
+    // Open files specified in command line arguments
+    if args.len() > 1 {
+        for arg in &args[1..] {
+            let path = std::path::Path::new(arg);
+            if path.exists() && path.is_file() {
+                match app.open_file(path.to_path_buf()) {
+                    Ok(buffer_id) => info!("Opened file from CLI: {:?} (buffer: {:?})", path, buffer_id),
+                    Err(e) => log::error!("Failed to open file {:?}: {}", path, e),
+                }
+            } else {
+                log::warn!("File not found or not a file: {:?}", path);
+            }
+        }
+    }
+
     // Create accelerator table for keyboard shortcuts
     let haccel = match create_accelerators() {
         Ok(accel) => {

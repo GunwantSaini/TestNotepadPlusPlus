@@ -26,6 +26,11 @@ windows = { version = "0.52", features = [
     "Win32_UI_Input_KeyboardAndMouse",
 ] }
 
+# Workspace-wide lints
+[workspace.lints.clippy]
+pedantic = "warn"
+nursery = "warn"
+
 [package]
 name = "notepad-plus-rust"
 version = "8.0.0"

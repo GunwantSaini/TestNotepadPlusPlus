@@ -1,0 +1,13 @@
+# Clippy linting configuration for Notepad++ Rust Edition
+
+# Warn on missing documentation in public items
+missing-docs-in-private-items = false
+
+# Set cognitive complexity threshold
+cognitive-complexity-threshold = 30
+
+# Deny these lints (treat as errors)
+# (none currently - using defaults)
+
+# Allow certain patterns we intentionally use
+# (none currently)
