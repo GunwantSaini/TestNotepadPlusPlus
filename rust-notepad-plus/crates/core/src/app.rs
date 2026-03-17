@@ -4,7 +4,7 @@
 //! of the C++ Notepad_plus class. It manages the overall application state,
 //! documents, views, and command routing.
 
-use crate::{Buffer, BufferId, Command, CommandId, FileManager, Result, ViewId};
+use crate::{Buffer, BufferId, CommandId, FileManager, Result, ViewId};
 use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::path::PathBuf;

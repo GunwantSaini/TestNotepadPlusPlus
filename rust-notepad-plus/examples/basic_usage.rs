@@ -2,8 +2,7 @@
 //!
 //! Run with: cargo run --example basic_usage
 
-use notepad_core::{NotepadApp, CommandId};
-use std::path::PathBuf;
+use notepad_core::NotepadApp;
 
 fn main() -> anyhow::Result<()> {
     // Initialize logging

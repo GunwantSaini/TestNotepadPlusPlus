@@ -55,6 +55,7 @@ pub struct Buffer {
     file_timestamp: Option<std::time::SystemTime>,
 
     /// Position info (cursor, scroll, etc.)
+    #[allow(dead_code)]
     position_info: PositionInfo,
 }
 

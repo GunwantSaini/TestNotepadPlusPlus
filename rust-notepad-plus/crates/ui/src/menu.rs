@@ -198,7 +198,7 @@ pub fn update_recent_files_menu(hwnd: HWND, recent_files: &[PathBuf]) {
 }
 
 /// Handle opening a recent file
-pub fn open_recent_file(hwnd: HWND, command_id: u32) -> Option<PathBuf> {
+pub fn open_recent_file(_hwnd: HWND, command_id: u32) -> Option<PathBuf> {
     let file_index = (command_id - 45000) as usize;
 
     crate::global_state::read_state(|state| {

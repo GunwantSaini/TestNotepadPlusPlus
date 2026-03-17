@@ -31,25 +31,23 @@ pub struct FindResult {
 }
 
 /// Create and show a Find dialog
-pub fn show_find_dialog(parent: HWND) -> Option<FindResult> {
-    unsafe {
-        // For now, we'll use a simple implementation
-        // In a full implementation, this would create a dialog from a resource
-        // or dynamically create dialog controls
+pub fn show_find_dialog(_parent: HWND) -> Option<FindResult> {
+    // For now, we'll use a simple implementation
+    // In a full implementation, this would create a dialog from a resource
+    // or dynamically create dialog controls
 
-        log::info!("Find dialog requested (simplified implementation)");
+    log::info!("Find dialog requested (simplified implementation)");
 
-        // This is a placeholder - a real implementation would:
-        // 1. Create a dialog window
-        // 2. Add edit controls for search text
-        // 3. Add checkboxes for options (case sensitive, whole word, regex)
-        // 4. Add buttons (Find Next, Find Previous, Cancel)
-        // 5. Handle the dialog message loop
-        // 6. Return the search parameters when user clicks Find
+    // This is a placeholder - a real implementation would:
+    // 1. Create a dialog window
+    // 2. Add edit controls for search text
+    // 3. Add checkboxes for options (case sensitive, whole word, regex)
+    // 4. Add buttons (Find Next, Find Previous, Cancel)
+    // 5. Handle the dialog message loop
+    // 6. Return the search parameters when user clicks Find
 
-        // For now, return None to indicate dialog was cancelled
-        None
-    }
+    // For now, return None to indicate dialog was cancelled
+    None
 }
 
 /// Create a simple Find dialog window (manual creation without resource file)

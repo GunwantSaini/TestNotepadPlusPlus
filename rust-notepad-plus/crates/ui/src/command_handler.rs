@@ -2,7 +2,6 @@
 
 use crate::file_dialogs::{show_open_dialog, show_save_dialog};
 use notepad_core::CommandId;
-use std::fs;
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::Controls::{EM_CANUNDO, EM_UNDO};
@@ -493,8 +492,9 @@ pub fn handle_command(hwnd: HWND, cmd: CommandId) -> bool {
 
                         // Update menu
                         crate::global_state::read_state(|state| {
+                            let files_vec: Vec<_> = state.get_recent_files().get_files().iter().cloned().collect();
+                            #[allow(unused_unsafe)]
                             unsafe {
-                                let files_vec: Vec<_> = state.get_recent_files().get_files().iter().cloned().collect();
                                 crate::menu::update_recent_files_menu(hwnd, &files_vec);
                             }
                         });

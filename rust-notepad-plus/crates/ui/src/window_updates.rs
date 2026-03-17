@@ -5,7 +5,6 @@ use windows::core::PCWSTR;
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{
     FindWindowExW, MessageBoxW, SendMessageW, SetWindowTextW, MB_ICONQUESTION, MB_YESNOCANCEL,
-    WM_SETTEXT,
 };
 
 /// Update the window title based on app state

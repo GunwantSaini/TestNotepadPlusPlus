@@ -4,6 +4,7 @@ use crate::{PluginInfo, Result};
 use std::path::PathBuf;
 
 pub struct PluginLoader {
+    #[allow(dead_code)]
     plugins_dir: PathBuf,
 }
 

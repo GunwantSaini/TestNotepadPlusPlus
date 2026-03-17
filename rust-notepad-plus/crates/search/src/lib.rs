@@ -1,7 +1,5 @@
 //! Search and replace functionality
 
-use anyhow::Result;
-
 pub mod engine;
 pub mod regex_search;
 
