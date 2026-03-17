@@ -7,7 +7,7 @@ members = [
     "crates/plugins",
     "crates/config",
     "crates/io",
-    "crates/search",
+    "crates/search", "crates/macros",
 ]
 resolver = "2"
 
