@@ -2,12 +2,14 @@
 //!
 //! Provides a Rust-based text editing widget using Ropey for text management
 
+pub mod command;
 pub mod text_buffer;
 pub mod view;
 
 #[cfg(windows)]
 pub mod scintilla;
 
+pub use command::{Command, InsertCommand, DeleteCommand, ReplaceCommand, UndoStack};
 pub use text_buffer::TextBuffer;
 pub use view::EditorView;
 
